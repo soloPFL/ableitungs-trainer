@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ableitungs-Trainer - Standalone Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .difficulty-btn.easy {
+            background: #4CAF50;
+        }
+
+        .difficulty-btn.medium {
+            background: #FF9800;
+        }
+
+        .difficulty-btn.hard {
+            background: #F44336;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .difficulty-btn.active {
+            box-shadow: 0 0 0 3px white, 0 0 0 5px currentColor;
+        }
+
+        .task-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .function-display {
+            font-size: 1.8em;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .math-expression {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-style: italic;
+        }
+
+        /* Unicode-Mathematik-Symbole */
+        .math-symbol {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #667eea;
+        }
+
+        .btn-secondary {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .solution-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            display: none;
+        }
+
+        .solution-content {
+            line-height: 1.8;
+        }
+
+        .solution-step {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 3px solid #667eea;
+        }
+
+        .solution-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .tip-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+            display: none;
+        }
+
+        .tip-content {
+            color: #856404;
+            font-style: italic;
+        }
+
+        .result-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: #d4edda;
+            border-radius: 8px;
+            border: 2px solid #28a745;
+            text-align: center;
+            display: none;
+        }
+
+        .result-content {
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .user-input-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .user-input {
+            padding: 12px;
+            font-size: 1.1em;
+            width: 300px;
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        .user-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .check-btn {
+            margin-top: 10px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .version-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        @media (max-width: 600px) {
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .function-display {
+                font-size: 1.4em;
+            }
+        }
+
+        /* Animationen */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Fraktions-Darstellung */
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .fraction-numerator, .fraction-denominator {
+            display: block;
+            padding: 2px 8px;
+        }
+
+        .fraction-line {
+            display: block;
+            border-bottom: 1px solid #333;
+            margin: 2px 0;
+        }
+
+        /* Wurzel-Darstellung */
+        .sqrt-symbol {
+            position: relative;
+            display: inline-block;
+        }
+
+        .sqrt-symbol::before {
+            content: "\221A";
+            position: absolute;
+            left: -5px;
+            top: -2px;
+            font-size: 1.5em;
+        }
+
+        /* Hochgestellte Zahlen */
+        sup {
+            font-size: 0.7em;
+            vertical-align: super;
+            line-height: 1;
+        }
+
+        /* Tiefgestellte Zahlen */
+        sub {
+            font-size: 0.7em;
+            vertical-align: sub;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ableitungs-Trainer</h1>
+            <p class="subtitle">Übe das Bilden von Ableitungen - von einfach bis schwer</p>
+        </header>
+
+        <div class="content">
+            <div class="difficulty-selector">
+                <button class="difficulty-btn easy active" onclick="selectDifficulty('easy')">Einfach</button>
+                <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">Mittel</button>
+                <button class="difficulty-btn hard" onclick="selectDifficulty('hard')">Schwer</button>
+            </div>
+
+            <div class="task-container">
+                <p class="instruction">Bilde die Ableitung der folgenden Funktion:</p>
+                <div class="function-display" id="functionDisplay">
+                    <span class="math-expression" id="currentFunction">f(x) = x<sup>2</sup></span>
+                </div>
+
+                <div class="user-input-container">
+                    <input type="text" class="user-input" id="userAnswer" 
+                           placeholder="Gib deine Lösung ein, z.B. 2x" 
+                           onkeypress="if(event.key === 'Enter') checkAnswer()">
+                    <button class="action-btn btn-primary check-btn" onclick="checkAnswer()">Überprüfen</button>
+                </div>
+
+                <div class="tip-container" id="tipContainer">
+                    <p class="tip-content" id="tipContent">Tipp: Wende die Potenzregel an: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup></p>
+                </div>
+
+                <div class="result-display" id="resultContainer">
+                    <p class="result-content" id="resultContent"></p>
+                </div>
+
+                <div class="solution-container" id="solutionContainer">
+                    <h3>Lösung:</h3>
+                    <div class="solution-content" id="solutionContent"></div>
+                </div>
+
+                <div class="buttons-container">
+                    <button class="action-btn btn-secondary" onclick="showTip()">Tipp anzeigen</button>
+                    <button class="action-btn btn-secondary" onclick="showSolution()">Lösung anzeigen</button>
+                    <button class="action-btn btn-primary" onclick="generateNewTask()">Neue Aufgabe</button>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">Richtig</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCount">0</div>
+                    <div class="stat-label">Versuche</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">Erfolgsquote</div>
+                </div>
+            </div>
+
+            <div class="version-info">
+                <p>Standalone-Version - Keine externen Abhängigkeiten erforderlich</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Ableitungs-Trainer &copy; 2024 | Für Studenten zum Üben von Ableitungen</p>
+        </footer>
+    </div>
+
+    <script>
+        // Statistiken
+        let correctCount = 0;
+        let totalCount = 0;
+
+        // Aktuelle Aufgabe
+        let currentTask = null;
+        let currentDifficulty = 'easy';
+
+        // Unicode-Symbole für bessere Darstellung
+        const symbols = {
+            prime: "'",
+            times: "·",
+            divided: "÷",
+            sqrt: "√",
+            integral: "∫",
+            infinity: "∞",
+            pi: "π",
+            e: "e",
+            ln: "ln",
+            log: "log",
+            sin: "sin",
+            cos: "cos",
+            tan: "tan",
+            exp: "exp"
+        };
+
+        // Aufgaben-Datenbank für jede Schwierigkeitsstufe
+        const tasks = {
+            easy: [
+                {
+                    function: 'f(x) = x<sup>2</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = 2x',
+                    steps: [
+                        'Gegeben: f(x) = x<sup>2</sup>',
+                        'Anwenden der Potenzregel: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup>',
+                        'Hier: n = 2, also f<sup>\'</sup>(x) = 2·x<sup>2-1</sup> = 2x'
+                    ],
+                    tip: 'Verwende die Potenzregel: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup>',
+                    rule: 'Potenzregel'
+                },
+                {
+                    function: 'f(x) = 3x<sup>4</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = 12x<sup>3</sup>',
+                    steps: [
+                        'Gegeben: f(x) = 3x<sup>4</sup>',
+                        'Konstante bleibt erhalten: 3 · d/dx[x<sup>4</sup>]',
+                        'Potenzregel: 3 · 4x<sup>3</sup> = 12x<sup>3</sup>'
+                    ],
+                    tip: 'Ziehe die Konstante 3 vor die Ableitung und wende dann die Potenzregel an.',
+                    rule: 'Potenzregel mit Konstante'
+                },
+                {
+                    function: 'f(x) = 5x',
+                    derivative: 'f<sup>\'</sup>(x) = 5',
+                    steps: [
+                        'Gegeben: f(x) = 5x = 5x<sup>1</sup>',
+                        'Potenzregel: d/dx[5x<sup>1</sup>] = 5·1·x<sup>0</sup> = 5·1 = 5'
+                    ],
+                    tip: '5x ist dasselbe wie 5x<sup>1</sup>. Wende die Potenzregel an.',
+                    rule: 'Potenzregel'
+                },
+                {
+                    function: 'f(x) = 7',
+                    derivative: 'f<sup>\'</sup>(x) = 0',
+                    steps: [
+                        'Gegeben: f(x) = 7 (Konstante)',
+                        'Die Ableitung einer Konstanten ist immer 0'
+                    ],
+                    tip: 'Die Ableitung einer Konstanten ist immer 0.',
+                    rule: 'Konstantenregel'
+                },
+                {
+                    function: 'f(x) = <span class="sqrt-symbol">x</span>',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">2<span class="sqrt-symbol">x</span></span></span>',
+                    steps: [
+                        'Gegeben: f(x) = √x = x<sup>1/2</sup>',
+                        'Potenzregel: d/dx[x<sup>1/2</sup>] = (1/2)·x<sup>-1/2</sup>',
+                        'Umgeschrieben: (1/2)·x<sup>-1/2</sup> = 1/(2√x)'
+                    ],
+                    tip: 'Schreibe √x als x<sup>1/2</sup> und wende die Potenzregel an.',
+                    rule: 'Potenzregel mit Wurzeln'
+                },
+                {
+                    function: 'f(x) = 1/x',
+                    derivative: 'f<sup>\'</sup>(x) = -1/x<sup>2</sup>',
+                    steps: [
+                        'Gegeben: f(x) = 1/x = x<sup>-1</sup>',
+                        'Potenzregel: d/dx[x<sup>-1</sup>] = -1·x<sup>-2</sup> = -1/x<sup>2</sup>'
+                    ],
+                    tip: 'Schreibe 1/x als x<sup>-1</sup> und wende die Potenzregel an.',
+                    rule: 'Potenzregel mit negativen Exponenten'
+                },
+                {
+                    function: 'f(x) = x<sup>3</sup> + 2x',
+                    derivative: 'f<sup>\'</sup>(x) = 3x<sup>2</sup> + 2',
+                    steps: [
+                        'Gegeben: f(x) = x<sup>3</sup> + 2x',
+                        'Summenregel: Ableitung der Summanden einzeln bilden',
+                        'd/dx[x<sup>3</sup>] = 3x<sup>2</sup>',
+                        'd/dx[2x] = 2',
+                        'Ergebnis: 3x<sup>2</sup> + 2'
+                    ],
+                    tip: 'Wende die Summenregel an: Jeder Summand wird einzeln abgeleitet.',
+                    rule: 'Summenregel'
+                },
+                {
+                    function: 'f(x) = 4x<sup>2</sup> - 3x + 5',
+                    derivative: 'f<sup>\'</sup>(x) = 8x - 3',
+                    steps: [
+                        'Gegeben: f(x) = 4x<sup>2</sup> - 3x + 5',
+                        'Summenregel: Jeder Term wird einzeln abgeleitet',
+                        'd/dx[4x<sup>2</sup>] = 8x',
+                        'd/dx[-3x] = -3',
+                        'd/dx[5] = 0',
+                        'Ergebnis: 8x - 3'
+                    ],
+                    tip: 'Leite jeden Term einzeln ab. Die Konstante 5 fällt weg.',
+                    rule: 'Summenregel'
+                }
+            ],
+
+            medium: [
+                {
+                    function: 'f(x) = (x<sup>2</sup> + 3)(2x - 1)',
+                    derivative: 'f<sup>\'</sup>(x) = 6x<sup>2</sup> - 2x + 6',
+                    steps: [
+                        'Gegeben: f(x) = (x<sup>2</sup> + 3)(2x - 1)',
+                        'Produktregel: (u·v)\' = u\'v + uv\'',
+                        'u = x<sup>2</sup> + 3, u\' = 2x',
+                        'v = 2x - 1, v\' = 2',
+                        'f<sup>\'</sup>(x) = (2x)(2x - 1) + (x<sup>2</sup> + 3)(2)',
+                        '= 4x<sup>2</sup> - 2x + 2x<sup>2</sup> + 6',
+                        '= 6x<sup>2</sup> - 2x + 6'
+                    ],
+                    tip: 'Verwende die Produktregel: (u·v)\' = u\'v + uv\'',
+                    rule: 'Produktregel'
+                },
+                {
+                    function: 'f(x) = x<sup>3</sup> · sin(x)',
+                    derivative: 'f<sup>\'</sup>(x) = 3x<sup>2</sup> · sin(x) + x<sup>3</sup> · cos(x)',
+                    steps: [
+                        'Gegeben: f(x) = x<sup>3</sup> · sin(x)',
+                        'Produktregel: (u·v)\' = u\'v + uv\'',
+                        'u = x<sup>3</sup>, u\' = 3x<sup>2</sup>',
+                        'v = sin(x), v\' = cos(x)',
+                        'f<sup>\'</sup>(x) = 3x<sup>2</sup> · sin(x) + x<sup>3</sup> · cos(x)'
+                    ],
+                    tip: 'Wende die Produktregel an. Die Ableitung von sin(x) ist cos(x).',
+                    rule: 'Produktregel mit trigonometrischer Funktion'
+                },
+                {
+                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">x<sup>2</sup></span><span class="fraction-line"></span><span class="fraction-denominator">x + 1</span></span>',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">2x(x + 1) - x<sup>2</sup></span><span class="fraction-line"></span><span class="fraction-denominator">(x + 1)<sup>2</sup></span></span>',
+                    steps: [
+                        'Gegeben: f(x) = x<sup>2</sup> / (x + 1)',
+                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
+                        'u = x<sup>2</sup>, u\' = 2x',
+                        'v = x + 1, v\' = 1',
+                        'f<sup>\'</sup>(x) = (2x·(x + 1) - x<sup>2</sup>·1) / (x + 1)<sup>2</sup>',
+                        '= (2x<sup>2</sup> + 2x - x<sup>2</sup>) / (x + 1)<sup>2</sup>',
+                        '= (x<sup>2</sup> + 2x) / (x + 1)<sup>2</sup>'
+                    ],
+                    tip: 'Verwende die Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
+                    rule: 'Quotientenregel'
+                },
+                {
+                    function: 'f(x) = (3x<sup>2</sup> + 2x)(x - 4)',
+                    derivative: 'f<sup>\'</sup>(x) = 9x<sup>2</sup> - 20x - 8',
+                    steps: [
+                        'Gegeben: f(x) = (3x<sup>2</sup> + 2x)(x - 4)',
+                        'Produktregel: (u·v)\' = u\'v + uv\'',
+                        'u = 3x<sup>2</sup> + 2x, u\' = 6x + 2',
+                        'v = x - 4, v\' = 1',
+                        'f<sup>\'</sup>(x) = (6x + 2)(x - 4) + (3x<sup>2</sup> + 2x)(1)',
+                        '= 6x<sup>2</sup> - 24x + 2x - 8 + 3x<sup>2</sup> + 2x',
+                        '= 9x<sup>2</sup> - 20x - 8'
+                    ],
+                    tip: 'Wende die Produktregel an und multipliziere die Klammern aus.',
+                    rule: 'Produktregel'
+                },
+                {
+                    function: 'f(x) = e<sup>2x</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = 2e<sup>2x</sup>',
+                    steps: [
+                        'Gegeben: f(x) = e<sup>2x</sup>',
+                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
+                        'u = 2x, u\' = 2',
+                        'f<sup>\'</sup>(x) = e<sup>2x</sup> · 2 = 2e<sup>2x</sup>'
+                    ],
+                    tip: 'Verwende die Kettenregel. Die Ableitung von e<sup>u</sup> ist e<sup>u</sup> · u\'.',
+                    rule: 'Kettenregel mit e-Funktion'
+                },
+                {
+                    function: 'f(x) = sin(3x)',
+                    derivative: 'f<sup>\'</sup>(x) = 3cos(3x)',
+                    steps: [
+                        'Gegeben: f(x) = sin(3x)',
+                        'Kettenregel: d/dx[sin(u)] = cos(u) · u\'',
+                        'u = 3x, u\' = 3',
+                        'f<sup>\'</sup>(x) = cos(3x) · 3 = 3cos(3x)'
+                    ],
+                    tip: 'Wende die Kettenregel an. Die Ableitung von sin(u) ist cos(u) · u\'.',
+                    rule: 'Kettenregel mit trigonometrischer Funktion'
+                },
+                {
+                    function: 'f(x) = x<sup>2</sup> · e<sup>x</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = 2x · e<sup>x</sup> + x<sup>2</sup> · e<sup>x</sup>',
+                    steps: [
+                        'Gegeben: f(x) = x<sup>2</sup> · e<sup>x</sup>',
+                        'Produktregel: (u·v)\' = u\'v + uv\'',
+                        'u = x<sup>2</sup>, u\' = 2x',
+                        'v = e<sup>x</sup>, v\' = e<sup>x</sup>',
+                        'f<sup>\'</sup>(x) = 2x · e<sup>x</sup> + x<sup>2</sup> · e<sup>x</sup>',
+                        '= e<sup>x</sup>(2x + x<sup>2</sup>)'
+                    ],
+                    tip: 'Wende die Produktregel an. Die Ableitung von e<sup>x</sup> ist e<sup>x</sup>.',
+                    rule: 'Produktregel mit e-Funktion'
+                },
+                {
+                    function: 'f(x) = ln(x) + x<sup>2</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span> + 2x',
+                    steps: [
+                        'Gegeben: f(x) = ln(x) + x<sup>2</sup>',
+                        'Summenregel: Jeder Summand wird einzeln abgeleitet',
+                        'd/dx[ln(x)] = 1/x',
+                        'd/dx[x<sup>2</sup>] = 2x',
+                        'Ergebnis: 1/x + 2x'
+                    ],
+                    tip: 'Die Ableitung von ln(x) ist 1/x. Leite dann x<sup>2</sup> mit der Potenzregel ab.',
+                    rule: 'Summenregel mit Logarithmus'
+                }
+            ],
+
+            hard: [
+                {
+                    function: 'f(x) = e<sup>x<sup>2</sup> + 1</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = 2x · e<sup>x<sup>2</sup> + 1</sup>',
+                    steps: [
+                        'Gegeben: f(x) = e<sup>x<sup>2</sup> + 1</sup>',
+                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
+                        'u = x<sup>2</sup> + 1, u\' = 2x',
+                        'f<sup>\'</sup>(x) = e<sup>x<sup>2</sup> + 1</sup> · 2x = 2x · e<sup>x<sup>2</sup> + 1</sup>'
+                    ],
+                    tip: 'Verwende die Kettenregel. Der Exponent x<sup>2</sup> + 1 muss abgeleitet werden.',
+                    rule: 'Kettenregel mit e-Funktion'
+                },
+                {
+                    function: 'f(x) = sin(x<sup>2</sup>)',
+                    derivative: 'f<sup>\'</sup>(x) = 2x · cos(x<sup>2</sup>)',
+                    steps: [
+                        'Gegeben: f(x) = sin(x<sup>2</sup>)',
+                        'Kettenregel: d/dx[sin(u)] = cos(u) · u\'',
+                        'u = x<sup>2</sup>, u\' = 2x',
+                        'f<sup>\'</sup>(x) = cos(x<sup>2</sup>) · 2x = 2x · cos(x<sup>2</sup>)'
+                    ],
+                    tip: 'Wende die Kettenregel an. Das Argument x<sup>2</sup> muss abgeleitet werden.',
+                    rule: 'Kettenregel mit trigonometrischer Funktion'
+                },
+                {
+                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">e<sup>x</sup></span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>2</sup></span></span>',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">e<sup>x</sup>(x<sup>2</sup> - 2x)</span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>4</sup></span></span>',
+                    steps: [
+                        'Gegeben: f(x) = e<sup>x</sup> / x<sup>2</sup>',
+                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
+                        'u = e<sup>x</sup>, u\' = e<sup>x</sup>',
+                        'v = x<sup>2</sup>, v\' = 2x',
+                        'f<sup>\'</sup>(x) = (e<sup>x</sup> · x<sup>2</sup> - e<sup>x</sup> · 2x) / (x<sup>2</sup>)<sup>2</sup>',
+                        '= e<sup>x</sup>(x<sup>2</sup> - 2x) / x<sup>4</sup>',
+                        '= e<sup>x</sup>(x - 2) / x<sup>3</sup>'
+                    ],
+                    tip: 'Verwende die Quotientenregel. Die Ableitung von e<sup>x</sup> ist e<sup>x</sup>.',
+                    rule: 'Quotientenregel mit e-Funktion'
+                },
+                {
+                    function: 'f(x) = cos(2x + 3)',
+                    derivative: 'f<sup>\'</sup>(x) = -2sin(2x + 3)',
+                    steps: [
+                        'Gegeben: f(x) = cos(2x + 3)',
+                        'Kettenregel: d/dx[cos(u)] = -sin(u) · u\'',
+                        'u = 2x + 3, u\' = 2',
+                        'f<sup>\'</sup>(x) = -sin(2x + 3) · 2 = -2sin(2x + 3)'
+                    ],
+                    tip: 'Wende die Kettenregel an. Die Ableitung von cos(u) ist -sin(u) · u\'.',
+                    rule: 'Kettenregel mit Cosinus'
+                },
+                {
+                    function: 'f(x) = (x<sup>2</sup> + 1) · ln(x)',
+                    derivative: 'f<sup>\'</sup>(x) = 2x · ln(x) + <span class="fraction"><span class="fraction-numerator">x<sup>2</sup> + 1</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span>',
+                    steps: [
+                        'Gegeben: f(x) = (x<sup>2</sup> + 1) · ln(x)',
+                        'Produktregel: (u·v)\' = u\'v + uv\'',
+                        'u = x<sup>2</sup> + 1, u\' = 2x',
+                        'v = ln(x), v\' = 1/x',
+                        'f<sup>\'</sup>(x) = 2x · ln(x) + (x<sup>2</sup> + 1) · (1/x)',
+                        '= 2x · ln(x) + (x<sup>2</sup> + 1)/x'
+                    ],
+                    tip: 'Wende die Produktregel an. Die Ableitung von ln(x) ist 1/x.',
+                    rule: 'Produktregel mit Logarithmus'
+                },
+                {
+                    function: 'f(x) = tan(x)',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">cos<sup>2</sup>(x)</span></span>',
+                    steps: [
+                        'Gegeben: f(x) = tan(x) = sin(x)/cos(x)',
+                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
+                        'u = sin(x), u\' = cos(x)',
+                        'v = cos(x), v\' = -sin(x)',
+                        'f<sup>\'</sup>(x) = (cos(x)·cos(x) - sin(x)·(-sin(x))) / cos<sup>2</sup>(x)',
+                        '= (cos<sup>2</sup>(x) + sin<sup>2</sup>(x)) / cos<sup>2</sup>(x)',
+                        '= 1 / cos<sup>2</sup>(x)  (da cos<sup>2</sup>(x) + sin<sup>2</sup>(x) = 1)'
+                    ],
+                    tip: 'Die Ableitung von tan(x) ist 1/cos<sup>2</sup>(x).',
+                    rule: 'Ableitung von Tangens'
+                },
+                {
+                    function: 'f(x) = e<sup>sin(x)</sup>',
+                    derivative: 'f<sup>\'</sup>(x) = cos(x) · e<sup>sin(x)</sup>',
+                    steps: [
+                        'Gegeben: f(x) = e<sup>sin(x)</sup>',
+                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
+                        'u = sin(x), u\' = cos(x)',
+                        'f<sup>\'</sup>(x) = e<sup>sin(x)</sup> · cos(x) = cos(x) · e<sup>sin(x)</sup>'
+                    ],
+                    tip: 'Verwende die Kettenregel. Die Ableitung von sin(x) ist cos(x).',
+                    rule: 'Kettenregel mit e-Funktion und trigonometrischer Funktion'
+                },
+                {
+                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">sin(x)</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span>',
+                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">x · cos(x) - sin(x)</span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>2</sup></span></span>',
+                    steps: [
+                        'Gegeben: f(x) = sin(x) / x',
+                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
+                        'u = sin(x), u\' = cos(x)',
+                        'v = x, v\' = 1',
+                        'f<sup>\'</sup>(x) = (cos(x) · x - sin(x) · 1) / x<sup>2</sup>',
+                        '= (x · cos(x) - sin(x)) / x<sup>2</sup>'
+                    ],
+                    tip: 'Verwende die Quotientenregel. Die Ableitung von sin(x) ist cos(x).',
+                    rule: 'Quotientenregel mit trigonometrischer Funktion'
+                }
+            ]
+        };
+
+        // Initialisierung
+        window.onload = function() {
+            generateNewTask();
+            updateStats();
+        };
+
+        // Schwierigkeitsstufe auswählen
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            
+            // Aktualisiere die Button-Stile
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.difficulty-btn.${difficulty}`).classList.add('active');
+            
+            // Generiere neue Aufgabe
+            generateNewTask();
+            
+            // Verstecke Tipp und Lösung
+            hideTip();
+            hideSolution();
+            hideResult();
+        }
+
+        // Neue Aufgabe generieren
+        function generateNewTask() {
+            const difficultyTasks = tasks[currentDifficulty];
+            const randomIndex = Math.floor(Math.random() * difficultyTasks.length);
+            currentTask = difficultyTasks[randomIndex];
+            
+            // Zeige die Funktion an
+            document.getElementById('currentFunction').innerHTML = currentTask.function;
+            document.getElementById('functionDisplay').classList.add('fade-in');
+            
+            // Setze das Eingabefeld zurück
+            document.getElementById('userAnswer').value = '';
+            
+            // Verstecke Tipp, Lösung und Ergebnis
+            hideTip();
+            hideSolution();
+            hideResult();
+        }
+
+        // Tipp anzeigen
+        function showTip() {
+            if (currentTask) {
+                document.getElementById('tipContent').innerHTML = currentTask.tip;
+                document.getElementById('tipContainer').style.display = 'block';
+                document.getElementById('tipContainer').classList.add('fade-in');
+            }
+        }
+
+        // Tipp verstecken
+        function hideTip() {
+            document.getElementById('tipContainer').style.display = 'none';
+            document.getElementById('tipContainer').classList.remove('fade-in');
+        }
+
+        // Lösung anzeigen
+        function showSolution() {
+            if (currentTask) {
+                let solutionHTML = '';
+                currentTask.steps.forEach((step, index) => {
+                    solutionHTML += `<div class="solution-step">${step}</div>`;
+                });
+                document.getElementById('solutionContent').innerHTML = solutionHTML;
+                document.getElementById('solutionContainer').style.display = 'block';
+                document.getElementById('solutionContainer').classList.add('fade-in');
+            }
+        }
+
+        // Lösung verstecken
+        function hideSolution() {
+            document.getElementById('solutionContainer').style.display = 'none';
+            document.getElementById('solutionContainer').classList.remove('fade-in');
+        }
+
+        // Ergebnis verstecken
+        function hideResult() {
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('resultContainer').classList.remove('fade-in');
+        }
+
+        // Antwort überprüfen
+        function checkAnswer() {
+            if (!currentTask) return;
+
+            const userAnswer = document.getElementById('userAnswer').value.trim();
+            
+            if (userAnswer === '') {
+                showResult('Bitte gib eine Antwort ein!', false);
+                return;
+            }
+
+            // Erhöhe den Versuchszähler
+            totalCount++;
+            
+            // Überprüfe die Antwort (mit verschiedenen akzeptablen Formaten)
+            const correctDerivative = currentTask.derivative;
+            
+            // Normalisiere die Antwort für den Vergleich
+            const normalizedUserAnswer = normalizeAnswer(userAnswer);
+            const normalizedCorrectAnswer = normalizeAnswer(correctDerivative);
+            
+            if (normalizedUserAnswer === normalizedCorrectAnswer) {
+                correctCount++;
+                showResult('Richtig! Gut gemacht!', true);
+            } else {
+                showResult(`Falsch. Die richtige Antwort ist: ${correctDerivative}`, false);
+            }
+            
+            updateStats();
+        }
+
+        // Ergebnis anzeigen
+        function showResult(message, isCorrect) {
+            const resultElement = document.getElementById('resultContent');
+            resultElement.innerHTML = message;
+            
+            if (isCorrect) {
+                resultElement.style.color = '#155724';
+                document.getElementById('resultContainer').style.background = '#d4edda';
+                document.getElementById('resultContainer').style.borderColor = '#28a745';
+            } else {
+                resultElement.style.color = '#721c24';
+                document.getElementById('resultContainer').style.background = '#f8d7da';
+                document.getElementById('resultContainer').style.borderColor = '#f5c6cb';
+            }
+            
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('resultContainer').classList.add('fade-in');
+        }
+
+        // Statistiken aktualisieren
+        function updateStats() {
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            
+            const successRate = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // Normalisiere Antwort für Vergleich
+        function normalizeAnswer(answer) {
+            // Entferne HTML-Tags
+            let normalized = answer.replace(/<[^>]*>/g, '');
+            
+            // Entferne Leerzeichen
+            normalized = normalized.replace(/\s+/g, '');
+            
+            // Ersetze verschiedene Schreibweisen
+            normalized = normalized.replace(/·/g, '*');
+            normalized = normalized.replace(/×/g, '*');
+            normalized = normalized.replace(/÷/g, '/');
+            normalized = normalized.replace(/\\/g, '');
+            normalized = normalized.replace(/\{/g, '');
+            normalized = normalized.replace(/\}/g, '');
+            normalized = normalized.replace(/\'/g, '');
+            
+            // Ersetze Unicode-Symbole
+            normalized = normalized.replace(/√/g, 'sqrt');
+            normalized = normalized.replace(/π/g, 'pi');
+            normalized = normalized.replace(/e/g, 'e');
+            normalized = normalized.replace(/ln/g, 'ln');
+            normalized = normalized.replace(/log/g, 'log');
+            normalized = normalized.replace(/sin/g, 'sin');
+            normalized = normalized.replace(/cos/g, 'cos');
+            normalized = normalized.replace(/tan/g, 'tan');
+            
+            // Entferne Hoch- und Tiefstellungen für Vergleich
+            normalized = normalized.replace(/<sup>([^<]*)<\/sup>/g, '^$1');
+            normalized = normalized.replace(/<sub>([^<]*)<\/sub>/g, '_$1');
+            
+            // Für einfache Vergleiche: Konvertiere zu Kleinbuchstaben
+            normalized = normalized.toLowerCase();
+            
+            return normalized;
+        }
+
+        // Tastaturkürzel
+        document.addEventListener('keydown', function(event) {
+            // Enter-Taste für Überprüfen
+            if (event.key === 'Enter' && document.activeElement.id === 'userAnswer') {
+                checkAnswer();
+            }
+            
+            // T-Taste für Tipp
+            if (event.key === 't' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                if (document.activeElement.id !== 'userAnswer') {
+                    showTip();
+                }
+            }
+            
+            // L-Taste für Lösung
+            if (event.key === 'l' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                if (document.activeElement.id !== 'userAnswer') {
+                    showSolution();
+                }
+            }
+            
+            // N-Taste für neue Aufgabe
+            if (event.key === 'n' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                if (document.activeElement.id !== 'userAnswer') {
+                    generateNewTask();
+                }
+            }
+        });
+
+        // Touch-Unterstützung für Mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(event) {
+            touchStartX = event.changedTouches[0].screenX;
+        }, false);
+
+        document.addEventListener('touchend', function(event) {
+            touchEndX = event.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe nach links - neue Aufgabe
+                    generateNewTask();
+                } else {
+                    // Swipe nach rechts - Tipp anzeigen
+                    showTip();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
