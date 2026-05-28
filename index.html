@@ -874,7 +874,7 @@
                 correctCount++;
                 showResult('Richtig! Gut gemacht!', true);
             } else {
-                showResult(`Falsch. Die richtige Antwort ist: $$f'(x) = ${currentTask.derivative}$$`, false);
+                showResult(`Falsch. Die richtige Antwort ist: $$${currentTask.derivative}$$`, false);
                 
                 // MathJax neu rendern
                 if (window.MathJax) {
@@ -933,8 +933,9 @@
             // Entferne alle Apostrophe (auch die aus f'(x))
             normalized = normalized.replace(/'/g, '');
             
-            // Entferne f(x) = Präfix (optional)
+            // Entferne f'(x) = oder f(x) = Präfix (optional)
             normalized = normalized.replace(/f\(x\)\s*=\s*/gi, '');
+            normalized = normalized.replace(/f'\s*=\s*/gi, '');
             
             // Entferne Leerzeichen
             normalized = normalized.replace(/\s+/g, '');
@@ -944,8 +945,6 @@
             normalized = normalized.replace(/×/g, '*');
             normalized = normalized.replace(/÷/g, '/');
             normalized = normalized.replace(/\\/g, '');
-            normalized = normalized.replace(/\{/g, '');
-            normalized = normalized.replace(/\}/g, '');
             
             // Ersetze Unicode-Symbole
             normalized = normalized.replace(/√/g, 'sqrt');
