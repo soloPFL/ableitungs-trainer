@@ -936,9 +936,15 @@
             // Entferne HTML-Tags
             let normalized = answer.replace(/<[^>]*>/g, '');
             
-            // Entferne f'(x) = oder f(x) = Präfix (optional)
+            // Entferne HTML-Entitäten für Apostroph (z.B. &apos; oder &#39;)
+            normalized = normalized.replace(/&apos;/g, '');
+            normalized = normalized.replace(/&#39;/g, '');
+            
+            // Entferne alle Apostrophe (auch die aus f'(x))
+            normalized = normalized.replace(/'/g, '');
+            
+            // Entferne f(x) = Präfix (optional)
             normalized = normalized.replace(/f\(x\)\s*=\s*/gi, '');
-            normalized = normalized.replace(/f'\s*=\s*/gi, '');
             
             // Entferne Leerzeichen
             normalized = normalized.replace(/\s+/g, '');
@@ -950,7 +956,6 @@
             normalized = normalized.replace(/\\/g, '');
             normalized = normalized.replace(/\{/g, '');
             normalized = normalized.replace(/\}/g, '');
-            normalized = normalized.replace(/\'/g, '');
             
             // Ersetze Unicode-Symbole
             normalized = normalized.replace(/√/g, 'sqrt');
