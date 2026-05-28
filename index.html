@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Ableitungs-Trainer - Standalone Version</title>
     <style>
         * {
@@ -792,6 +795,20 @@
         window.onload = function() {
             generateNewTask();
             updateStats();
+        };
+
+        // Auch bei DOMContentLoaded ausführen für bessere Kompatibilität
+        document.addEventListener('DOMContentLoaded', function() {
+            generateNewTask();
+            updateStats();
+        });
+
+        // Bei Seitenaufruf mit Cache (z.B. Zurück-Button) neu laden
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                // Seite wurde aus dem Cache geladen
+                generateNewTask();
+            }
         };
 
         // Schwierigkeitsstufe auswählen
