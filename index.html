@@ -6,7 +6,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Ableitungs-Trainer - Standalone Version</title>
+    <title>Ableitungs-Trainer</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         * {
             margin: 0;
@@ -110,16 +112,6 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .math-expression {
-            font-family: 'Cambria Math', 'Times New Roman', serif;
-            font-style: italic;
-        }
-
-        /* Unicode-Mathematik-Symbole */
-        .math-symbol {
-            font-family: 'Cambria Math', 'Times New Roman', serif;
-        }
-
         .instruction {
             text-align: center;
             margin-bottom: 20px;
@@ -152,10 +144,6 @@
 
         .btn-secondary {
             background: #764ba2;
-        }
-
-        .btn-success {
-            background: #4CAF50;
         }
 
         .action-btn:hover {
@@ -215,6 +203,21 @@
             font-weight: 600;
         }
 
+        .error-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8d7da;
+            border-radius: 8px;
+            border: 2px solid #f5c6cb;
+            text-align: center;
+            display: none;
+        }
+
+        .error-content {
+            color: #721c24;
+            font-weight: 600;
+        }
+
         .user-input-container {
             margin: 20px 0;
             text-align: center;
@@ -228,7 +231,6 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             text-align: center;
-            font-family: 'Cambria Math', 'Times New Roman', serif;
         }
 
         .user-input:focus {
@@ -281,13 +283,6 @@
             text-decoration: underline;
         }
 
-        .version-info {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 0.8em;
-            color: #999;
-        }
-
         @media (max-width: 600px) {
             .difficulty-selector {
                 flex-direction: column;
@@ -327,52 +322,6 @@
         .fade-in {
             animation: fadeIn 0.3s ease-out;
         }
-
-        /* Fraktions-Darstellung */
-        .fraction {
-            display: inline-block;
-            vertical-align: middle;
-            text-align: center;
-        }
-
-        .fraction-numerator, .fraction-denominator {
-            display: block;
-            padding: 2px 8px;
-        }
-
-        .fraction-line {
-            display: block;
-            border-bottom: 1px solid #333;
-            margin: 2px 0;
-        }
-
-        /* Wurzel-Darstellung */
-        .sqrt-symbol {
-            position: relative;
-            display: inline-block;
-        }
-
-        .sqrt-symbol::before {
-            content: "\221A";
-            position: absolute;
-            left: -5px;
-            top: -2px;
-            font-size: 1.5em;
-        }
-
-        /* Hochgestellte Zahlen */
-        sup {
-            font-size: 0.7em;
-            vertical-align: super;
-            line-height: 1;
-        }
-
-        /* Tiefgestellte Zahlen */
-        sub {
-            font-size: 0.7em;
-            vertical-align: sub;
-            line-height: 1;
-        }
     </style>
 </head>
 <body>
@@ -392,7 +341,7 @@
             <div class="task-container">
                 <p class="instruction">Bilde die Ableitung der folgenden Funktion:</p>
                 <div class="function-display" id="functionDisplay">
-                    <span class="math-expression" id="currentFunction">f(x) = x<sup>2</sup></span>
+                    $$f(x) = x^2$$
                 </div>
 
                 <div class="user-input-container">
@@ -403,7 +352,11 @@
                 </div>
 
                 <div class="tip-container" id="tipContainer">
-                    <p class="tip-content" id="tipContent">Tipp: Wende die Potenzregel an: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup></p>
+                    <p class="tip-content" id="tipContent"></p>
+                </div>
+
+                <div class="error-display" id="errorContainer">
+                    <p class="error-content" id="errorContent"></p>
                 </div>
 
                 <div class="result-display" id="resultContainer">
@@ -436,10 +389,6 @@
                     <div class="stat-label">Erfolgsquote</div>
                 </div>
             </div>
-
-            <div class="version-info">
-                <p>Standalone-Version - Keine externen Abhängigkeiten erforderlich</p>
-            </div>
         </div>
 
         <footer>
@@ -456,341 +405,6 @@
         let currentTask = null;
         let currentDifficulty = 'easy';
 
-        // Unicode-Symbole für bessere Darstellung
-        const symbols = {
-            prime: "'",
-            times: "·",
-            divided: "÷",
-            sqrt: "√",
-            integral: "∫",
-            infinity: "∞",
-            pi: "π",
-            e: "e",
-            ln: "ln",
-            log: "log",
-            sin: "sin",
-            cos: "cos",
-            tan: "tan",
-            exp: "exp"
-        };
-
-        // Aufgaben-Datenbank für jede Schwierigkeitsstufe
-        const tasks = {
-            easy: [
-                {
-                    function: 'f(x) = x<sup>2</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = 2x',
-                    steps: [
-                        'Gegeben: f(x) = x<sup>2</sup>',
-                        'Anwenden der Potenzregel: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup>',
-                        'Hier: n = 2, also f<sup>\'</sup>(x) = 2·x<sup>2-1</sup> = 2x'
-                    ],
-                    tip: 'Verwende die Potenzregel: d/dx[x<sup>n</sup>] = n·x<sup>n-1</sup>',
-                    rule: 'Potenzregel'
-                },
-                {
-                    function: 'f(x) = 3x<sup>4</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = 12x<sup>3</sup>',
-                    steps: [
-                        'Gegeben: f(x) = 3x<sup>4</sup>',
-                        'Konstante bleibt erhalten: 3 · d/dx[x<sup>4</sup>]',
-                        'Potenzregel: 3 · 4x<sup>3</sup> = 12x<sup>3</sup>'
-                    ],
-                    tip: 'Ziehe die Konstante 3 vor die Ableitung und wende dann die Potenzregel an.',
-                    rule: 'Potenzregel mit Konstante'
-                },
-                {
-                    function: 'f(x) = 5x',
-                    derivative: 'f<sup>\'</sup>(x) = 5',
-                    steps: [
-                        'Gegeben: f(x) = 5x = 5x<sup>1</sup>',
-                        'Potenzregel: d/dx[5x<sup>1</sup>] = 5·1·x<sup>0</sup> = 5·1 = 5'
-                    ],
-                    tip: '5x ist dasselbe wie 5x<sup>1</sup>. Wende die Potenzregel an.',
-                    rule: 'Potenzregel'
-                },
-                {
-                    function: 'f(x) = 7',
-                    derivative: 'f<sup>\'</sup>(x) = 0',
-                    steps: [
-                        'Gegeben: f(x) = 7 (Konstante)',
-                        'Die Ableitung einer Konstanten ist immer 0'
-                    ],
-                    tip: 'Die Ableitung einer Konstanten ist immer 0.',
-                    rule: 'Konstantenregel'
-                },
-                {
-                    function: 'f(x) = <span class="sqrt-symbol">x</span>',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">2<span class="sqrt-symbol">x</span></span></span>',
-                    steps: [
-                        'Gegeben: f(x) = √x = x<sup>1/2</sup>',
-                        'Potenzregel: d/dx[x<sup>1/2</sup>] = (1/2)·x<sup>-1/2</sup>',
-                        'Umgeschrieben: (1/2)·x<sup>-1/2</sup> = 1/(2√x)'
-                    ],
-                    tip: 'Schreibe √x als x<sup>1/2</sup> und wende die Potenzregel an.',
-                    rule: 'Potenzregel mit Wurzeln'
-                },
-                {
-                    function: 'f(x) = 1/x',
-                    derivative: 'f<sup>\'</sup>(x) = -1/x<sup>2</sup>',
-                    steps: [
-                        'Gegeben: f(x) = 1/x = x<sup>-1</sup>',
-                        'Potenzregel: d/dx[x<sup>-1</sup>] = -1·x<sup>-2</sup> = -1/x<sup>2</sup>'
-                    ],
-                    tip: 'Schreibe 1/x als x<sup>-1</sup> und wende die Potenzregel an.',
-                    rule: 'Potenzregel mit negativen Exponenten'
-                },
-                {
-                    function: 'f(x) = x<sup>3</sup> + 2x',
-                    derivative: 'f<sup>\'</sup>(x) = 3x<sup>2</sup> + 2',
-                    steps: [
-                        'Gegeben: f(x) = x<sup>3</sup> + 2x',
-                        'Summenregel: Ableitung der Summanden einzeln bilden',
-                        'd/dx[x<sup>3</sup>] = 3x<sup>2</sup>',
-                        'd/dx[2x] = 2',
-                        'Ergebnis: 3x<sup>2</sup> + 2'
-                    ],
-                    tip: 'Wende die Summenregel an: Jeder Summand wird einzeln abgeleitet.',
-                    rule: 'Summenregel'
-                },
-                {
-                    function: 'f(x) = 4x<sup>2</sup> - 3x + 5',
-                    derivative: 'f<sup>\'</sup>(x) = 8x - 3',
-                    steps: [
-                        'Gegeben: f(x) = 4x<sup>2</sup> - 3x + 5',
-                        'Summenregel: Jeder Term wird einzeln abgeleitet',
-                        'd/dx[4x<sup>2</sup>] = 8x',
-                        'd/dx[-3x] = -3',
-                        'd/dx[5] = 0',
-                        'Ergebnis: 8x - 3'
-                    ],
-                    tip: 'Leite jeden Term einzeln ab. Die Konstante 5 fällt weg.',
-                    rule: 'Summenregel'
-                }
-            ],
-
-            medium: [
-                {
-                    function: 'f(x) = (x<sup>2</sup> + 3)(2x - 1)',
-                    derivative: 'f<sup>\'</sup>(x) = 6x<sup>2</sup> - 2x + 6',
-                    steps: [
-                        'Gegeben: f(x) = (x<sup>2</sup> + 3)(2x - 1)',
-                        'Produktregel: (u·v)\' = u\'v + uv\'',
-                        'u = x<sup>2</sup> + 3, u\' = 2x',
-                        'v = 2x - 1, v\' = 2',
-                        'f<sup>\'</sup>(x) = (2x)(2x - 1) + (x<sup>2</sup> + 3)(2)',
-                        '= 4x<sup>2</sup> - 2x + 2x<sup>2</sup> + 6',
-                        '= 6x<sup>2</sup> - 2x + 6'
-                    ],
-                    tip: 'Verwende die Produktregel: (u·v)\' = u\'v + uv\'',
-                    rule: 'Produktregel'
-                },
-                {
-                    function: 'f(x) = x<sup>3</sup> · sin(x)',
-                    derivative: 'f<sup>\'</sup>(x) = 3x<sup>2</sup> · sin(x) + x<sup>3</sup> · cos(x)',
-                    steps: [
-                        'Gegeben: f(x) = x<sup>3</sup> · sin(x)',
-                        'Produktregel: (u·v)\' = u\'v + uv\'',
-                        'u = x<sup>3</sup>, u\' = 3x<sup>2</sup>',
-                        'v = sin(x), v\' = cos(x)',
-                        'f<sup>\'</sup>(x) = 3x<sup>2</sup> · sin(x) + x<sup>3</sup> · cos(x)'
-                    ],
-                    tip: 'Wende die Produktregel an. Die Ableitung von sin(x) ist cos(x).',
-                    rule: 'Produktregel mit trigonometrischer Funktion'
-                },
-                {
-                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">x<sup>2</sup></span><span class="fraction-line"></span><span class="fraction-denominator">x + 1</span></span>',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">2x(x + 1) - x<sup>2</sup></span><span class="fraction-line"></span><span class="fraction-denominator">(x + 1)<sup>2</sup></span></span>',
-                    steps: [
-                        'Gegeben: f(x) = x<sup>2</sup> / (x + 1)',
-                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
-                        'u = x<sup>2</sup>, u\' = 2x',
-                        'v = x + 1, v\' = 1',
-                        'f<sup>\'</sup>(x) = (2x·(x + 1) - x<sup>2</sup>·1) / (x + 1)<sup>2</sup>',
-                        '= (2x<sup>2</sup> + 2x - x<sup>2</sup>) / (x + 1)<sup>2</sup>',
-                        '= (x<sup>2</sup> + 2x) / (x + 1)<sup>2</sup>'
-                    ],
-                    tip: 'Verwende die Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
-                    rule: 'Quotientenregel'
-                },
-                {
-                    function: 'f(x) = (3x<sup>2</sup> + 2x)(x - 4)',
-                    derivative: 'f<sup>\'</sup>(x) = 9x<sup>2</sup> - 20x - 8',
-                    steps: [
-                        'Gegeben: f(x) = (3x<sup>2</sup> + 2x)(x - 4)',
-                        'Produktregel: (u·v)\' = u\'v + uv\'',
-                        'u = 3x<sup>2</sup> + 2x, u\' = 6x + 2',
-                        'v = x - 4, v\' = 1',
-                        'f<sup>\'</sup>(x) = (6x + 2)(x - 4) + (3x<sup>2</sup> + 2x)(1)',
-                        '= 6x<sup>2</sup> - 24x + 2x - 8 + 3x<sup>2</sup> + 2x',
-                        '= 9x<sup>2</sup> - 20x - 8'
-                    ],
-                    tip: 'Wende die Produktregel an und multipliziere die Klammern aus.',
-                    rule: 'Produktregel'
-                },
-                {
-                    function: 'f(x) = e<sup>2x</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = 2e<sup>2x</sup>',
-                    steps: [
-                        'Gegeben: f(x) = e<sup>2x</sup>',
-                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
-                        'u = 2x, u\' = 2',
-                        'f<sup>\'</sup>(x) = e<sup>2x</sup> · 2 = 2e<sup>2x</sup>'
-                    ],
-                    tip: 'Verwende die Kettenregel. Die Ableitung von e<sup>u</sup> ist e<sup>u</sup> · u\'.',
-                    rule: 'Kettenregel mit e-Funktion'
-                },
-                {
-                    function: 'f(x) = sin(3x)',
-                    derivative: 'f<sup>\'</sup>(x) = 3cos(3x)',
-                    steps: [
-                        'Gegeben: f(x) = sin(3x)',
-                        'Kettenregel: d/dx[sin(u)] = cos(u) · u\'',
-                        'u = 3x, u\' = 3',
-                        'f<sup>\'</sup>(x) = cos(3x) · 3 = 3cos(3x)'
-                    ],
-                    tip: 'Wende die Kettenregel an. Die Ableitung von sin(u) ist cos(u) · u\'.',
-                    rule: 'Kettenregel mit trigonometrischer Funktion'
-                },
-                {
-                    function: 'f(x) = x<sup>2</sup> · e<sup>x</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = 2x · e<sup>x</sup> + x<sup>2</sup> · e<sup>x</sup>',
-                    steps: [
-                        'Gegeben: f(x) = x<sup>2</sup> · e<sup>x</sup>',
-                        'Produktregel: (u·v)\' = u\'v + uv\'',
-                        'u = x<sup>2</sup>, u\' = 2x',
-                        'v = e<sup>x</sup>, v\' = e<sup>x</sup>',
-                        'f<sup>\'</sup>(x) = 2x · e<sup>x</sup> + x<sup>2</sup> · e<sup>x</sup>',
-                        '= e<sup>x</sup>(2x + x<sup>2</sup>)'
-                    ],
-                    tip: 'Wende die Produktregel an. Die Ableitung von e<sup>x</sup> ist e<sup>x</sup>.',
-                    rule: 'Produktregel mit e-Funktion'
-                },
-                {
-                    function: 'f(x) = ln(x) + x<sup>2</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span> + 2x',
-                    steps: [
-                        'Gegeben: f(x) = ln(x) + x<sup>2</sup>',
-                        'Summenregel: Jeder Summand wird einzeln abgeleitet',
-                        'd/dx[ln(x)] = 1/x',
-                        'd/dx[x<sup>2</sup>] = 2x',
-                        'Ergebnis: 1/x + 2x'
-                    ],
-                    tip: 'Die Ableitung von ln(x) ist 1/x. Leite dann x<sup>2</sup> mit der Potenzregel ab.',
-                    rule: 'Summenregel mit Logarithmus'
-                }
-            ],
-
-            hard: [
-                {
-                    function: 'f(x) = e<sup>x<sup>2</sup> + 1</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = 2x · e<sup>x<sup>2</sup> + 1</sup>',
-                    steps: [
-                        'Gegeben: f(x) = e<sup>x<sup>2</sup> + 1</sup>',
-                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
-                        'u = x<sup>2</sup> + 1, u\' = 2x',
-                        'f<sup>\'</sup>(x) = e<sup>x<sup>2</sup> + 1</sup> · 2x = 2x · e<sup>x<sup>2</sup> + 1</sup>'
-                    ],
-                    tip: 'Verwende die Kettenregel. Der Exponent x<sup>2</sup> + 1 muss abgeleitet werden.',
-                    rule: 'Kettenregel mit e-Funktion'
-                },
-                {
-                    function: 'f(x) = sin(x<sup>2</sup>)',
-                    derivative: 'f<sup>\'</sup>(x) = 2x · cos(x<sup>2</sup>)',
-                    steps: [
-                        'Gegeben: f(x) = sin(x<sup>2</sup>)',
-                        'Kettenregel: d/dx[sin(u)] = cos(u) · u\'',
-                        'u = x<sup>2</sup>, u\' = 2x',
-                        'f<sup>\'</sup>(x) = cos(x<sup>2</sup>) · 2x = 2x · cos(x<sup>2</sup>)'
-                    ],
-                    tip: 'Wende die Kettenregel an. Das Argument x<sup>2</sup> muss abgeleitet werden.',
-                    rule: 'Kettenregel mit trigonometrischer Funktion'
-                },
-                {
-                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">e<sup>x</sup></span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>2</sup></span></span>',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">e<sup>x</sup>(x<sup>2</sup> - 2x)</span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>4</sup></span></span>',
-                    steps: [
-                        'Gegeben: f(x) = e<sup>x</sup> / x<sup>2</sup>',
-                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
-                        'u = e<sup>x</sup>, u\' = e<sup>x</sup>',
-                        'v = x<sup>2</sup>, v\' = 2x',
-                        'f<sup>\'</sup>(x) = (e<sup>x</sup> · x<sup>2</sup> - e<sup>x</sup> · 2x) / (x<sup>2</sup>)<sup>2</sup>',
-                        '= e<sup>x</sup>(x<sup>2</sup> - 2x) / x<sup>4</sup>',
-                        '= e<sup>x</sup>(x - 2) / x<sup>3</sup>'
-                    ],
-                    tip: 'Verwende die Quotientenregel. Die Ableitung von e<sup>x</sup> ist e<sup>x</sup>.',
-                    rule: 'Quotientenregel mit e-Funktion'
-                },
-                {
-                    function: 'f(x) = cos(2x + 3)',
-                    derivative: 'f<sup>\'</sup>(x) = -2sin(2x + 3)',
-                    steps: [
-                        'Gegeben: f(x) = cos(2x + 3)',
-                        'Kettenregel: d/dx[cos(u)] = -sin(u) · u\'',
-                        'u = 2x + 3, u\' = 2',
-                        'f<sup>\'</sup>(x) = -sin(2x + 3) · 2 = -2sin(2x + 3)'
-                    ],
-                    tip: 'Wende die Kettenregel an. Die Ableitung von cos(u) ist -sin(u) · u\'.',
-                    rule: 'Kettenregel mit Cosinus'
-                },
-                {
-                    function: 'f(x) = (x<sup>2</sup> + 1) · ln(x)',
-                    derivative: 'f<sup>\'</sup>(x) = 2x · ln(x) + <span class="fraction"><span class="fraction-numerator">x<sup>2</sup> + 1</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span>',
-                    steps: [
-                        'Gegeben: f(x) = (x<sup>2</sup> + 1) · ln(x)',
-                        'Produktregel: (u·v)\' = u\'v + uv\'',
-                        'u = x<sup>2</sup> + 1, u\' = 2x',
-                        'v = ln(x), v\' = 1/x',
-                        'f<sup>\'</sup>(x) = 2x · ln(x) + (x<sup>2</sup> + 1) · (1/x)',
-                        '= 2x · ln(x) + (x<sup>2</sup> + 1)/x'
-                    ],
-                    tip: 'Wende die Produktregel an. Die Ableitung von ln(x) ist 1/x.',
-                    rule: 'Produktregel mit Logarithmus'
-                },
-                {
-                    function: 'f(x) = tan(x)',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">1</span><span class="fraction-line"></span><span class="fraction-denominator">cos<sup>2</sup>(x)</span></span>',
-                    steps: [
-                        'Gegeben: f(x) = tan(x) = sin(x)/cos(x)',
-                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
-                        'u = sin(x), u\' = cos(x)',
-                        'v = cos(x), v\' = -sin(x)',
-                        'f<sup>\'</sup>(x) = (cos(x)·cos(x) - sin(x)·(-sin(x))) / cos<sup>2</sup>(x)',
-                        '= (cos<sup>2</sup>(x) + sin<sup>2</sup>(x)) / cos<sup>2</sup>(x)',
-                        '= 1 / cos<sup>2</sup>(x)  (da cos<sup>2</sup>(x) + sin<sup>2</sup>(x) = 1)'
-                    ],
-                    tip: 'Die Ableitung von tan(x) ist 1/cos<sup>2</sup>(x).',
-                    rule: 'Ableitung von Tangens'
-                },
-                {
-                    function: 'f(x) = e<sup>sin(x)</sup>',
-                    derivative: 'f<sup>\'</sup>(x) = cos(x) · e<sup>sin(x)</sup>',
-                    steps: [
-                        'Gegeben: f(x) = e<sup>sin(x)</sup>',
-                        'Kettenregel: d/dx[e<sup>u</sup>] = e<sup>u</sup> · u\'',
-                        'u = sin(x), u\' = cos(x)',
-                        'f<sup>\'</sup>(x) = e<sup>sin(x)</sup> · cos(x) = cos(x) · e<sup>sin(x)</sup>'
-                    ],
-                    tip: 'Verwende die Kettenregel. Die Ableitung von sin(x) ist cos(x).',
-                    rule: 'Kettenregel mit e-Funktion und trigonometrischer Funktion'
-                },
-                {
-                    function: 'f(x) = <span class="fraction"><span class="fraction-numerator">sin(x)</span><span class="fraction-line"></span><span class="fraction-denominator">x</span></span>',
-                    derivative: 'f<sup>\'</sup>(x) = <span class="fraction"><span class="fraction-numerator">x · cos(x) - sin(x)</span><span class="fraction-line"></span><span class="fraction-denominator">x<sup>2</sup></span></span>',
-                    steps: [
-                        'Gegeben: f(x) = sin(x) / x',
-                        'Quotientenregel: (u/v)\' = (u\'v - uv\') / v<sup>2</sup>',
-                        'u = sin(x), u\' = cos(x)',
-                        'v = x, v\' = 1',
-                        'f<sup>\'</sup>(x) = (cos(x) · x - sin(x) · 1) / x<sup>2</sup>',
-                        '= (x · cos(x) - sin(x)) / x<sup>2</sup>'
-                    ],
-                    tip: 'Verwende die Quotientenregel. Die Ableitung von sin(x) ist cos(x).',
-                    rule: 'Quotientenregel mit trigonometrischer Funktion'
-                }
-            ]
-        };
-
         // Initialisierung
         window.onload = function() {
             generateNewTask();
@@ -806,7 +420,6 @@
         // Bei Seitenaufruf mit Cache (z.B. Zurück-Button) neu laden
         window.onpageshow = function(event) {
             if (event.persisted) {
-                // Seite wurde aus dem Cache geladen
                 generateNewTask();
             }
         };
@@ -824,20 +437,20 @@
             // Generiere neue Aufgabe
             generateNewTask();
             
-            // Verstecke Tipp und Lösung
+            // Verstecke Tipp, Lösung und Ergebnis
             hideTip();
             hideSolution();
             hideResult();
+            hideError();
         }
 
-        // Neue Aufgabe generieren
+        // Neue Aufgabe generieren - DYNAMISCH!
         function generateNewTask() {
-            const difficultyTasks = tasks[currentDifficulty];
-            const randomIndex = Math.floor(Math.random() * difficultyTasks.length);
-            currentTask = difficultyTasks[randomIndex];
+            const task = generateRandomTask(currentDifficulty);
+            currentTask = task;
             
-            // Zeige die Funktion an
-            document.getElementById('currentFunction').innerHTML = currentTask.function;
+            // Zeige die Funktion an (mit MathJax)
+            document.getElementById('functionDisplay').innerHTML = `$$${task.function}$$`;
             document.getElementById('functionDisplay').classList.add('fade-in');
             
             // Setze das Eingabefeld zurück
@@ -847,6 +460,340 @@
             hideTip();
             hideSolution();
             hideResult();
+            hideError();
+            
+            // MathJax neu rendern
+            if (window.MathJax) {
+                MathJax.typesetPromise().catch((err) => console.log(err));
+            }
+        }
+
+        // DYNAMISCHE AUFGABENGENERIERUNG
+        function generateRandomTask(difficulty) {
+            const taskTypes = getTaskTypesForDifficulty(difficulty);
+            const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+            
+            return randomType.generator();
+        }
+
+        function getTaskTypesForDifficulty(difficulty) {
+            const easyTasks = [
+                // Potenzregel: x^n
+                {
+                    name: 'Potenzregel einfach',
+                    generator: () => {
+                        const n = Math.floor(Math.random() * 5) + 2; // 2-6
+                        const functionStr = `f(x) = x^{${n}}`;
+                        const derivative = `${n}x^{${n-1}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = x^{${n}}$$`,
+                            `Anwenden der Potenzregel: $$\frac{d}{dx}[x^n] = n\cdot x^{n-1}$$`,
+                            `Hier: n = ${n}, also $$f'(x) = ${n}x^{${n-1}}$$`
+                        ];
+                        const tip = `Verwende die Potenzregel: $$\frac{d}{dx}[x^n] = n\cdot x^{n-1}$$`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel' };
+                    }
+                },
+                // Konstante * x^n
+                {
+                    name: 'Potenzregel mit Konstante',
+                    generator: () => {
+                        const c = Math.floor(Math.random() * 5) + 2; // 2-6
+                        const n = Math.floor(Math.random() * 4) + 2; // 2-5
+                        const functionStr = `f(x) = ${c}x^{${n}}`;
+                        const derivative = `${c * n}x^{${n-1}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = ${c}x^{${n}}$$`,
+                            `Konstante bleibt erhalten: ${c} \\cdot \\frac{d}{dx}[x^{${n}}]`,
+                            `Potenzregel: ${c} \\cdot ${n}x^{${n-1}} = ${c * n}x^{${n-1}}`
+                        ];
+                        const tip = `Ziehe die Konstante ${c} vor die Ableitung und wende dann die Potenzregel an.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel mit Konstante' };
+                    }
+                },
+                // Lineare Funktion
+                {
+                    name: 'Lineare Funktion',
+                    generator: () => {
+                        const c = Math.floor(Math.random() * 10) + 1; // 1-10
+                        const functionStr = `f(x) = ${c}x`;
+                        const derivative = `${c}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = ${c}x = ${c}x^1$$`,
+                            `Potenzregel: $$\frac{d}{dx}[${c}x^1] = ${c}\\cdot 1\\cdot x^0 = ${c}$$`
+                        ];
+                        const tip = `${c}x ist dasselbe wie ${c}x^1. Wende die Potenzregel an.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel' };
+                    }
+                },
+                // Konstante
+                {
+                    name: 'Konstante',
+                    generator: () => {
+                        const c = Math.floor(Math.random() * 20) + 1; // 1-20
+                        const functionStr = `f(x) = ${c}`;
+                        const derivative = `0`;
+                        const steps = [
+                            `Gegeben: $$f(x) = ${c}$$ (Konstante)`,
+                            `Die Ableitung einer Konstanten ist immer 0`
+                        ];
+                        const tip = `Die Ableitung einer Konstanten ist immer 0.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Konstantenregel' };
+                    }
+                },
+                // Wurzel
+                {
+                    name: 'Wurzel',
+                    generator: () => {
+                        const functionStr = `f(x) = \\sqrt{x}`;
+                        const derivative = `\\frac{1}{2\\sqrt{x}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\sqrt{x} = x^{1/2}$$`,
+                            `Potenzregel: $$\\frac{d}{dx}[x^{1/2}] = \\frac{1}{2}x^{-1/2}$$`,
+                            `Umgeschrieben: $$\\frac{1}{2}x^{-1/2} = \\frac{1}{2\\sqrt{x}}$$`
+                        ];
+                        const tip = `Schreibe \\sqrt{x} als x^{1/2} und wende die Potenzregel an.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel mit Wurzeln' };
+                    }
+                },
+                // 1/x
+                {
+                    name: 'Reziproke',
+                    generator: () => {
+                        const functionStr = `f(x) = \\frac{1}{x}`;
+                        const derivative = `-\\frac{1}{x^2}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\frac{1}{x} = x^{-1}$$`,
+                            `Potenzregel: $$\\frac{d}{dx}[x^{-1}] = -1\\cdot x^{-2} = -\\frac{1}{x^2}$$`
+                        ];
+                        const tip = `Schreibe 1/x als x^{-1} und wende die Potenzregel an.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel mit negativen Exponenten' };
+                    }
+                }
+            ];
+
+            const mediumTasks = [
+                ...easyTasks,
+                // Summenregel
+                {
+                    name: 'Summenregel',
+                    generator: () => {
+                        const terms = [];
+                        let derivativeTerms = [];
+                        let steps = [`Gegeben: `];
+                        
+                        // 2-3 Terme generieren
+                        const numTerms = Math.floor(Math.random() * 2) + 2;
+                        
+                        for (let i = 0; i < numTerms; i++) {
+                            const type = Math.random();
+                            if (type < 0.4) {
+                                // x^n Term
+                                const n = Math.floor(Math.random() * 4) + 2;
+                                const c = Math.floor(Math.random() * 5) + 1;
+                                terms.push(`${c}x^{${n}}`);
+                                derivativeTerms.push(`${c * n}x^{${n-1}}`);
+                                steps.push(`$$\\frac{d}{dx}[${c}x^{${n}}] = ${c * n}x^{${n-1}}$$`);
+                            } else if (type < 0.7) {
+                                // Lineare Funktion
+                                const c = Math.floor(Math.random() * 10) + 1;
+                                terms.push(`${c}x`);
+                                derivativeTerms.push(`${c}`);
+                                steps.push(`$$\\frac{d}{dx}[${c}x] = ${c}$$`);
+                            } else {
+                                // Konstante
+                                const c = Math.floor(Math.random() * 10) + 1;
+                                terms.push(`${c}`);
+                                derivativeTerms.push(`0`);
+                                steps.push(`$$\\frac{d}{dx}[${c}] = 0$$`);
+                            }
+                        }
+                        
+                        const functionStr = `f(x) = ${terms.join(' + ')}`;
+                        const derivative = derivativeTerms.join(' + ').replace(/\+ -/g, '- ').replace(/\+ 0/g, '').replace(/ - 0/g, '');
+                        
+                        steps[0] += `$$f(x) = ${terms.join(' + ')}$$`;
+                        steps.unshift('Summenregel: Jeder Term wird einzeln abgeleitet');
+                        steps.push(`Ergebnis: $$f'(x) = ${derivative}$$`);
+                        
+                        const tip = 'Leite jeden Term einzeln ab. Konstanten fallen weg.';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Summenregel' };
+                    }
+                },
+                // e^(kx)
+                {
+                    name: 'e-Funktion einfach',
+                    generator: () => {
+                        const k = Math.floor(Math.random() * 5) + 1; // 1-5
+                        const functionStr = `f(x) = e^{${k}x}`;
+                        const derivative = `${k}e^{${k}x}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = e^{${k}x}$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[e^u] = e^u \\cdot u'$$`,
+                            `u = ${k}x, u' = ${k}`,
+                            `$$f'(x) = e^{${k}x} \\cdot ${k} = ${k}e^{${k}x}$$`
+                        ];
+                        const tip = `Verwende die Kettenregel. Die Ableitung von e^u ist e^u · u'.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit e-Funktion' };
+                    }
+                },
+                // sin(kx)
+                {
+                    name: 'Sin-Funktion',
+                    generator: () => {
+                        const k = Math.floor(Math.random() * 4) + 1; // 1-4
+                        const functionStr = `f(x) = \\sin(${k}x)`;
+                        const derivative = `${k}\\cos(${k}x)`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\sin(${k}x)$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[\\sin(u)] = \\cos(u) \\cdot u'$$`,
+                            `u = ${k}x, u' = ${k}`,
+                            `$$f'(x) = \\cos(${k}x) \\cdot ${k} = ${k}\\cos(${k}x)$$`
+                        ];
+                        const tip = `Wende die Kettenregel an. Die Ableitung von sin(u) ist cos(u) · u'.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit trigonometrischer Funktion' };
+                    }
+                },
+                // cos(kx)
+                {
+                    name: 'Cos-Funktion',
+                    generator: () => {
+                        const k = Math.floor(Math.random() * 4) + 1; // 1-4
+                        const functionStr = `f(x) = \\cos(${k}x)`;
+                        const derivative = `-${k}\\sin(${k}x)`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\cos(${k}x)$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[\\cos(u)] = -\\sin(u) \\cdot u'$$`,
+                            `u = ${k}x, u' = ${k}`,
+                            `$$f'(x) = -\\sin(${k}x) \\cdot ${k} = -${k}\\sin(${k}x)$$`
+                        ];
+                        const tip = `Wende die Kettenregel an. Die Ableitung von cos(u) ist -sin(u) · u'.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit Cosinus' };
+                    }
+                },
+                // ln(x) + Polynom
+                {
+                    name: 'Logarithmus + Polynom',
+                    generator: () => {
+                        const n = Math.floor(Math.random() * 3) + 2; // 2-4
+                        const c = Math.floor(Math.random() * 5) + 1; // 1-5
+                        const functionStr = `f(x) = \\ln(x) + ${c}x^{${n}}`;
+                        const derivative = `\\frac{1}{x} + ${c * n}x^{${n-1}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\ln(x) + ${c}x^{${n}}$$`,
+                            `Summenregel: Jeder Summand wird einzeln abgeleitet`,
+                            `$$\\frac{d}{dx}[\\ln(x)] = \\frac{1}{x}$$`,
+                            `$$\\frac{d}{dx}[${c}x^{${n}}] = ${c * n}x^{${n-1}}$$`,
+                            `Ergebnis: $$f'(x) = \\frac{1}{x} + ${c * n}x^{${n-1}}$$`
+                        ];
+                        const tip = 'Die Ableitung von ln(x) ist 1/x. Leite dann das Polynom mit der Potenzregel ab.';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Summenregel mit Logarithmus' };
+                    }
+                }
+            ];
+
+            const hardTasks = [
+                ...mediumTasks,
+                // Produktregel: x^n * e^x
+                {
+                    name: 'Produktregel x^n * e^x',
+                    generator: () => {
+                        const n = Math.floor(Math.random() * 4) + 2; // 2-5
+                        const functionStr = `f(x) = x^{${n}}\\cdot e^{x}`;
+                        const derivative = `${n}x^{${n-1}}\\cdot e^{x} + x^{${n}}\\cdot e^{x}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = x^{${n}}\\cdot e^{x}$$`,
+                            `Produktregel: $$(u\\cdot v)' = u'v + uv'$$`,
+                            `u = x^{${n}}, u' = ${n}x^{${n-1}}`,
+                            `v = e^{x}, v' = e^{x}`,
+                            `$$f'(x) = ${n}x^{${n-1}}\\cdot e^{x} + x^{${n}}\\cdot e^{x}$$`,
+                            `$$= e^{x}(${n}x^{${n-1}} + x^{${n}})$$`
+                        ];
+                        const tip = 'Wende die Produktregel an. Die Ableitung von e^x ist e^x.';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Produktregel mit e-Funktion' };
+                    }
+                },
+                // e^(x^2)
+                {
+                    name: 'Kettenregel e^(x^2)',
+                    generator: () => {
+                        const functionStr = `f(x) = e^{x^2}`;
+                        const derivative = `2x\\cdot e^{x^2}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = e^{x^2}$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[e^u] = e^u \\cdot u'$$`,
+                            `u = x^2, u' = 2x`,
+                            `$$f'(x) = e^{x^2} \\cdot 2x = 2x\\cdot e^{x^2}$$`
+                        ];
+                        const tip = 'Verwende die Kettenregel. Der Exponent x^2 muss abgeleitet werden.';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit e-Funktion' };
+                    }
+                },
+                // sin(x^2)
+                {
+                    name: 'Kettenregel sin(x^2)',
+                    generator: () => {
+                        const functionStr = `f(x) = \\sin(x^2)`;
+                        const derivative = `2x\\cdot \\cos(x^2)`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\sin(x^2)$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[\\sin(u)] = \\cos(u) \\cdot u'$$`,
+                            `u = x^2, u' = 2x`,
+                            `$$f'(x) = \\cos(x^2) \\cdot 2x = 2x\\cdot \\cos(x^2)$$`
+                        ];
+                        const tip = 'Wende die Kettenregel an. Das Argument x^2 muss abgeleitet werden.';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit trigonometrischer Funktion' };
+                    }
+                },
+                // Quotientenregel: x^2 / (x + c)
+                {
+                    name: 'Quotientenregel',
+                    generator: () => {
+                        const c = Math.floor(Math.random() * 5) + 1; // 1-5
+                        const functionStr = `f(x) = \\frac{x^2}{x + ${c}}`;
+                        const numerator = `2x(x + ${c}) - x^2\\cdot 1`;
+                        const denominator = `(x + ${c})^2`;
+                        const derivative = `\\frac{${numerator}}{${denominator}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \\frac{x^2}{x + ${c}}$$`,
+                            `Quotientenregel: $$\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$$`,
+                            `u = x^2, u' = 2x`,
+                            `v = x + ${c}, v' = 1`,
+                            `$$f'(x) = \\frac{2x\\cdot (x + ${c}) - x^2\\cdot 1}{(x + ${c})^2}$$`,
+                            `$$= \\frac{2x^2 + 2${c}x - x^2}{(x + ${c})^2} = \\frac{x^2 + 2${c}x}{(x + ${c})^2}$$`
+                        ];
+                        const tip = `Verwende die Quotientenregel: (u/v)' = (u'v - uv') / v^2`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Quotientenregel' };
+                    }
+                },
+                // e^(sin(x))
+                {
+                    name: 'Kettenregel e^(sin(x))',
+                    generator: () => {
+                        const functionStr = `f(x) = e^{\\sin(x)}`;
+                        const derivative = `\\cos(x)\\cdot e^{\\sin(x)}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = e^{\\sin(x)}$$`,
+                            `Kettenregel: $$\\frac{d}{dx}[e^u] = e^u \\cdot u'$$`,
+                            `u = \\sin(x), u' = \\cos(x)`,
+                            `$$f'(x) = e^{\\sin(x)} \\cdot \\cos(x) = \\cos(x)\\cdot e^{\\sin(x)}$$`
+                        ];
+                        const tip = 'Verwende die Kettenregel. Die Ableitung von sin(x) ist cos(x).';
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel mit e-Funktion und trigonometrischer Funktion' };
+                    }
+                }
+            ];
+
+            switch (difficulty) {
+                case 'easy':
+                    return easyTasks;
+                case 'medium':
+                    return mediumTasks;
+                case 'hard':
+                    return hardTasks;
+                default:
+                    return easyTasks;
+            }
         }
 
         // Tipp anzeigen
@@ -855,6 +802,11 @@
                 document.getElementById('tipContent').innerHTML = currentTask.tip;
                 document.getElementById('tipContainer').style.display = 'block';
                 document.getElementById('tipContainer').classList.add('fade-in');
+                
+                // MathJax neu rendern
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch((err) => console.log(err));
+                }
             }
         }
 
@@ -874,6 +826,11 @@
                 document.getElementById('solutionContent').innerHTML = solutionHTML;
                 document.getElementById('solutionContainer').style.display = 'block';
                 document.getElementById('solutionContainer').classList.add('fade-in');
+                
+                // MathJax neu rendern
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch((err) => console.log(err));
+                }
             }
         }
 
@@ -889,6 +846,12 @@
             document.getElementById('resultContainer').classList.remove('fade-in');
         }
 
+        // Fehler verstecken
+        function hideError() {
+            document.getElementById('errorContainer').style.display = 'none';
+            document.getElementById('errorContainer').classList.remove('fade-in');
+        }
+
         // Antwort überprüfen
         function checkAnswer() {
             if (!currentTask) return;
@@ -896,28 +859,38 @@
             const userAnswer = document.getElementById('userAnswer').value.trim();
             
             if (userAnswer === '') {
-                showResult('Bitte gib eine Antwort ein!', false);
+                showError('Bitte gib eine Antwort ein!');
                 return;
             }
 
             // Erhöhe den Versuchszähler
             totalCount++;
             
-            // Überprüfe die Antwort (mit verschiedenen akzeptablen Formaten)
-            const correctDerivative = currentTask.derivative;
-            
-            // Normalisiere die Antwort für den Vergleich
+            // Normalisiere beide Antworten für den Vergleich
             const normalizedUserAnswer = normalizeAnswer(userAnswer);
-            const normalizedCorrectAnswer = normalizeAnswer(correctDerivative);
+            const normalizedCorrectAnswer = normalizeAnswer(currentTask.derivative);
             
             if (normalizedUserAnswer === normalizedCorrectAnswer) {
                 correctCount++;
                 showResult('Richtig! Gut gemacht!', true);
             } else {
-                showResult(`Falsch. Die richtige Antwort ist: ${correctDerivative}`, false);
+                showResult(`Falsch. Die richtige Antwort ist: $$f'(x) = ${currentTask.derivative}$$`, false);
+                
+                // MathJax neu rendern
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch((err) => console.log(err));
+                }
             }
             
             updateStats();
+        }
+
+        // Fehler anzeigen
+        function showError(message) {
+            const errorElement = document.getElementById('errorContent');
+            errorElement.innerHTML = message;
+            document.getElementById('errorContainer').style.display = 'block';
+            document.getElementById('errorContainer').classList.add('fade-in');
         }
 
         // Ergebnis anzeigen
@@ -953,7 +926,7 @@
             // Entferne HTML-Tags
             let normalized = answer.replace(/<[^>]*>/g, '');
             
-            // Entferne HTML-Entitäten für Apostroph (z.B. &apos; oder &#39;)
+            // Entferne HTML-Entitäten für Apostroph
             normalized = normalized.replace(/&apos;/g, '');
             normalized = normalized.replace(/&#39;/g, '');
             
@@ -977,16 +950,6 @@
             // Ersetze Unicode-Symbole
             normalized = normalized.replace(/√/g, 'sqrt');
             normalized = normalized.replace(/π/g, 'pi');
-            normalized = normalized.replace(/e/g, 'e');
-            normalized = normalized.replace(/ln/g, 'ln');
-            normalized = normalized.replace(/log/g, 'log');
-            normalized = normalized.replace(/sin/g, 'sin');
-            normalized = normalized.replace(/cos/g, 'cos');
-            normalized = normalized.replace(/tan/g, 'tan');
-            
-            // Entferne Hoch- und Tiefstellungen für Vergleich
-            normalized = normalized.replace(/<sup>([^<]*)<\/sup>/g, '^$1');
-            normalized = normalized.replace(/<sub>([^<]*)<\/sub>/g, '_$1');
             
             // Für einfache Vergleiche: Konvertiere zu Kleinbuchstaben
             normalized = normalized.toLowerCase();
