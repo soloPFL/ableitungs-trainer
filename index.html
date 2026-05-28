@@ -940,15 +940,47 @@
             // Entferne Leerzeichen
             normalized = normalized.replace(/\s+/g, '');
             
-            // Ersetze verschiedene Schreibweisen
-            normalized = normalized.replace(/·/g, '*');
-            normalized = normalized.replace(/×/g, '*');
+            // Ersetze verschiedene Schreibweisen für Multiplikation (entferne alle)
+            normalized = normalized.replace(/·/g, '');
+            normalized = normalized.replace(/×/g, '');
             normalized = normalized.replace(/÷/g, '/');
-            normalized = normalized.replace(/\\/g, '');
+            
+            // Ersetze Unicode-Hochzahlen durch ^n (² → ^2, ³ → ^3, etc.)
+            normalized = normalized.replace(/²/g, '^2');
+            normalized = normalized.replace(/³/g, '^3');
+            normalized = normalized.replace(/⁴/g, '^4');
+            normalized = normalized.replace(/⁵/g, '^5');
+            normalized = normalized.replace(/⁶/g, '^6');
+            normalized = normalized.replace(/⁷/g, '^7');
+            normalized = normalized.replace(/⁸/g, '^8');
+            normalized = normalized.replace(/⁹/g, '^9');
+            
+            // Ersetze LaTeX-Format durch einfaches Format
+            // \frac{a}{b} -> (a)/(b)
+            normalized = normalized.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)');
+            // \sqrt{x} -> sqrt(x)
+            normalized = normalized.replace(/\\sqrt\{([^}]+)\}/g, 'sqrt($1)');
+            // \sin, \cos, \ln -> sin, cos, ln
+            normalized = normalized.replace(/\\sin/g, 'sin');
+            normalized = normalized.replace(/\\cos/g, 'cos');
+            normalized = normalized.replace(/\\ln/g, 'ln');
+            // e^{x} -> e^x
+            normalized = normalized.replace(/\{([^}]+)\}/g, '$1');
             
             // Ersetze Unicode-Symbole
             normalized = normalized.replace(/√/g, 'sqrt');
             normalized = normalized.replace(/π/g, 'pi');
+            
+            // Standardisiere Bruchschreibweise: x^-n → 1/x^n
+            normalized = normalized.replace(/x\^\-1/g, '1/x');
+            normalized = normalized.replace(/x\^\-2/g, '1/x^2');
+            normalized = normalized.replace(/x\^\-3/g, '1/x^3');
+            normalized = normalized.replace(/x\^\-4/g, '1/x^4');
+            normalized = normalized.replace(/x\^\-5/g, '1/x^5');
+            
+            // Entferne überflüssige Klammern
+            normalized = normalized.replace(/\{/g, '');
+            normalized = normalized.replace(/\}/g, '');
             
             // Für einfache Vergleiche: Konvertiere zu Kleinbuchstaben
             normalized = normalized.toLowerCase();
