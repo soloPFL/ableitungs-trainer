@@ -120,6 +120,15 @@
             padding-bottom: 8px;
         }
 
+        .formula-title {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 6px;
+        }
+
         .formula-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -467,49 +476,49 @@
                 <h4>🔹 Grundlegende Ableitungsregeln</h4>
                 <div class="formula-grid">
                     <div class="formula-card">
-                        <h4>Potenzregel</h4>
+                        <div class="formula-title">Potenzregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[x^n] = n \cdot x^{n-1}$$</div>
                         <div class="formula-description">
                             <small>Für alle reellen Zahlen n</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Konstantenregel</h4>
+                        <div class="formula-title">Konstantenregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[c] = 0$$</div>
                         <div class="formula-description">
                             <small>Die Ableitung einer Konstanten ist null</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Faktorregel</h4>
+                        <div class="formula-title">Faktorregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[c \cdot f(x)] = c \cdot f'(x)$$</div>
                         <div class="formula-description">
                             <small>Konstante Faktoren bleiben erhalten</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Summenregel</h4>
+                        <div class="formula-title">Summenregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[f(x) + g(x)] = f'(x) + g'(x)$$</div>
                         <div class="formula-description">
                             <small>Ableitung der Summe = Summe der Ableitungen</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Produktregel</h4>
+                        <div class="formula-title">Produktregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[f(x) \cdot g(x)] = f'(x) \cdot g(x) + f(x) \cdot g'(x)$$</div>
                         <div class="formula-description">
                             <small>"Erste mal Ableitung der zweiten plus zweite mal Ableitung der ersten"</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Quotientenregel</h4>
+                        <div class="formula-title">Quotientenregel</div>
                         <div class="formula-main">$$\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}$$</div>
                         <div class="formula-description">
                             <small>"NAZ minus ZAN durch N²"</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Kettenregel</h4>
+                        <div class="formula-title">Kettenregel</div>
                         <div class="formula-main">$$\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$$</div>
                         <div class="formula-description">
                             <small>"Äußere Ableitung mal innere Ableitung"</small>
@@ -520,42 +529,42 @@
                 <h4>🔹 Wichtige Ableitungen</h4>
                 <div class="formula-grid">
                     <div class="formula-card">
-                        <h4>e-Funktion</h4>
+                        <div class="formula-title">e-Funktion</div>
                         <div class="formula-main">$$\frac{d}{dx}[e^x] = e^x$$</div>
                         <div class="formula-description">
                             <small>Die e-Funktion bleibt erhalten</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Natürlicher Logarithmus</h4>
+                        <div class="formula-title">Natürlicher Logarithmus</div>
                         <div class="formula-main">$$\frac{d}{dx}[\ln(x)] = \frac{1}{x}$$</div>
                         <div class="formula-description">
                             <small>Für x > 0</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Sin-Funktion</h4>
+                        <div class="formula-title">Sin-Funktion</div>
                         <div class="formula-main">$$\frac{d}{dx}[\sin(x)] = \cos(x)$$</div>
                         <div class="formula-description">
                             <small>Sin wird zu Cos</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Cos-Funktion</h4>
+                        <div class="formula-title">Cos-Funktion</div>
                         <div class="formula-main">$$\frac{d}{dx}[\cos(x)] = -\sin(x)$$</div>
                         <div class="formula-description">
                             <small>Cos wird zu -Sin</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Wurzel</h4>
+                        <div class="formula-title">Wurzel</div>
                         <div class="formula-main">$$\frac{d}{dx}[\sqrt{x}] = \frac{1}{2\sqrt{x}}$$</div>
                         <div class="formula-description">
                             <small>Oder: (1/2) · x^(-1/2)</small>
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Reziproke</h4>
+                        <div class="formula-title">Reziproke</div>
                         <div class="formula-main">$$\frac{d}{dx}\left[\frac{1}{x}\right] = -\frac{1}{x^2}$$</div>
                         <div class="formula-description">
                             <small>Negatives Vorzeichen!</small>
@@ -566,7 +575,7 @@
                 <h4>🔹 BWL Formeln</h4>
                 <div class="formula-grid">
                     <div class="formula-card">
-                        <h4>Bogenelastizität der Nachfrage</h4>
+                        <div class="formula-title">Bogenelastizität der Nachfrage</div>
                         <div class="formula-main">$$\varepsilon_{y,x} = \frac{\Delta y / y}{\Delta x / x}$$<br>$$= \frac{\Delta y}{\Delta x} \cdot \frac{x}{y}$$</div>
                         <div class="formula-description">
                             Preiselastizität: ε = (Δx/x) / (Δp/p)
@@ -574,7 +583,7 @@
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Grenzkosten</h4>
+                        <div class="formula-title">Grenzkosten</div>
                         <div class="formula-main">$$K'(x) = \frac{dK}{dx}$$</div>
                         <div class="formula-description">
                             Änderung der Kosten bei einer zusätzlichen Einheit
@@ -582,7 +591,7 @@
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Grenzumsatz / Grenzerlös</h4>
+                        <div class="formula-title">Grenzumsatz / Grenzerlös</div>
                         <div class="formula-main">$$E'(x) = \frac{dE}{dx}$$</div>
                         <div class="formula-description">
                             Änderung des Erlöses bei einer zusätzlichen Einheit
@@ -590,7 +599,7 @@
                         </div>
                     </div>
                     <div class="formula-card">
-                        <h4>Grenzgewinn</h4>
+                        <div class="formula-title">Grenzgewinn</div>
                         <div class="formula-main">$$G'(x) = E'(x) - K'(x)$$</div>
                         <div class="formula-description">
                             Änderung des Gewinns bei einer zusätzlichen Einheit
