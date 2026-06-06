@@ -9,6 +9,10 @@
     <title>Ableitungs-Trainer</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- jsPDF für PDF-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas für HTML zu Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -85,6 +89,10 @@
             background: #F44336;
         }
 
+        .difficulty-btn.bwl {
+            background: #9C27B0;
+        }
+
         .difficulty-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -144,6 +152,10 @@
 
         .btn-secondary {
             background: #764ba2;
+        }
+
+        .btn-export {
+            background: #FF5722;
         }
 
         .action-btn:hover {
@@ -328,7 +340,7 @@
     <div class="container">
         <header>
             <h1>Ableitungs-Trainer</h1>
-            <p class="subtitle">Übe das Bilden von Ableitungen - von einfach bis schwer</p>
+            <p class="subtitle">Übe das Bilden von Ableitungen - von einfach bis BWL Bachelor</p>
         </header>
 
         <div class="content">
@@ -336,6 +348,7 @@
                 <button class="difficulty-btn easy active" onclick="selectDifficulty('easy')">Einfach</button>
                 <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">Mittel</button>
                 <button class="difficulty-btn hard" onclick="selectDifficulty('hard')">Schwer</button>
+                <button class="difficulty-btn bwl" onclick="selectDifficulty('bwl')">BWL Bachelor</button>
             </div>
 
             <div class="task-container">
@@ -372,6 +385,7 @@
                     <button class="action-btn btn-secondary" onclick="showTip()">Tipp anzeigen</button>
                     <button class="action-btn btn-secondary" onclick="showSolution()">Lösung anzeigen</button>
                     <button class="action-btn btn-primary" onclick="generateNewTask()">Neue Aufgabe</button>
+                    <button class="action-btn btn-export" onclick="exportToPDF()">Als PDF exportieren</button>
                 </div>
             </div>
 
@@ -404,6 +418,9 @@
         // Aktuelle Aufgabe
         let currentTask = null;
         let currentDifficulty = 'easy';
+        
+        // Für PDF-Export
+        let pdfTaskHistory = [];
 
         // Initialisierung
         window.onload = function() {
@@ -448,6 +465,22 @@
         function generateNewTask() {
             const task = generateRandomTask(currentDifficulty);
             currentTask = task;
+            
+            // Speichere die aktuelle Aufgabe für den PDF-Export
+            pdfTaskHistory.push({
+                function: task.function,
+                derivative: task.derivative,
+                steps: task.steps,
+                tip: task.tip,
+                rule: task.rule,
+                difficulty: currentDifficulty,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Behalte nur die letzten 10 Aufgaben
+            if (pdfTaskHistory.length > 10) {
+                pdfTaskHistory.shift();
+            }
             
             // Zeige die Funktion an (mit MathJax)
             document.getElementById('functionDisplay').innerHTML = `$$${task.function}$$`;
@@ -784,6 +817,122 @@
                 }
             ];
 
+            // BWL Bachelor Aufgaben
+            const bwlTasks = [
+                // Preis-Absatz-Funktionen
+                {
+                    name: 'Preis-Absatz-Funktion linear',
+                    generator: () => {
+                        const p0 = Math.floor(Math.random() * 50) + 100;
+                        const m = Math.floor(Math.random() * 5) + 1;
+                        const functionStr = `p(x) = ${p0} - ${m}x`;
+                        const derivative = `-${m}`;
+                        const steps = [
+                            `Gegeben: Preis-Absatz-Funktion $$p(x) = ${p0} - ${m}x$$`,
+                            `Lineare Funktion: Ableitung der Konstanten ${p0} ist 0`,
+                            `Ableitung von -${m}x ist -${m}`,
+                            `Ergebnis: $$p'(x) = -${m}$$ (Grenzumsatz/Preisänderungsrate)`
+                        ];
+                        const tip = `Bei einer linearen Preis-Absatz-Funktion p(x) = a - bx ist die Ableitung p'(x) = -b.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Preis-Absatz-Funktion linear' };
+                    }
+                },
+                {
+                    name: 'Preis-Absatz-Funktion quadratisch',
+                    generator: () => {
+                        const p0 = Math.floor(Math.random() * 30) + 50;
+                        const a = Math.floor(Math.random() * 3) + 1;
+                        const b = Math.floor(Math.random() * 2) + 1;
+                        const functionStr = `p(x) = ${p0} - ${a}x + ${b}x^2`;
+                        const derivative = `-${a} + ${2*b}x`;
+                        const steps = [
+                            `Gegeben: Preis-Absatz-Funktion $$p(x) = ${p0} - ${a}x + ${b}x^2$$`,
+                            `Konstante ${p0}: Ableitung = 0`,
+                            `Term -${a}x: Ableitung = -${a}`,
+                            `Term ${b}x^2: Ableitung = ${2*b}x (Potenzregel)`,
+                            `Ergebnis: $$p'(x) = -${a} + ${2*b}x$$`
+                        ];
+                        const tip = `Leite jeden Term einzeln ab.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Preis-Absatz-Funktion quadratisch' };
+                    }
+                },
+                // Kostenfunktionen
+                {
+                    name: 'Kostenfunktion linear',
+                    generator: () => {
+                        const Kf = Math.floor(Math.random() * 100) + 50;
+                        const kv = Math.floor(Math.random() * 20) + 5;
+                        const functionStr = `K(x) = ${Kf} + ${kv}x`;
+                        const derivative = `${kv}`;
+                        const steps = [
+                            `Gegeben: Kostenfunktion $$K(x) = ${Kf} + ${kv}x$$`,
+                            `Fixkosten ${Kf}: Ableitung = 0`,
+                            `Variable Kosten ${kv}x: Ableitung = ${kv}`,
+                            `Ergebnis: $$K'(x) = ${kv}$$ (Grenzkosten)`
+                        ];
+                        const tip = `Bei einer linearen Kostenfunktion sind die Grenzkosten K'(x) gleich den variablen Kosten pro Einheit.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kostenfunktion linear' };
+                    }
+                },
+                {
+                    name: 'Kostenfunktion quadratisch',
+                    generator: () => {
+                        const Kf = Math.floor(Math.random() * 80) + 30;
+                        const a = Math.floor(Math.random() * 10) + 5;
+                        const b = Math.floor(Math.random() * 5) + 1;
+                        const functionStr = `K(x) = ${Kf} + ${a}x + ${b}x^2`;
+                        const derivative = `${a} + ${2*b}x`;
+                        const steps = [
+                            `Gegeben: Kostenfunktion $$K(x) = ${Kf} + ${a}x + ${b}x^2$$`,
+                            `Fixkosten ${Kf}: Ableitung = 0`,
+                            `Linearer Term ${a}x: Ableitung = ${a}`,
+                            `Quadratischer Term ${b}x^2: Ableitung = ${2*b}x`,
+                            `Ergebnis: $$K'(x) = ${a} + ${2*b}x$$ (Grenzkosten)`
+                        ];
+                        const tip = `Leite jeden Term ab. Die Fixkosten fallen weg.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kostenfunktion quadratisch' };
+                    }
+                },
+                // Gewinnfunktionen
+                {
+                    name: 'Gewinnfunktion einfach',
+                    generator: () => {
+                        const p = Math.floor(Math.random() * 20) + 50;
+                        const k = Math.floor(Math.random() * 10) + 20;
+                        const Kf = Math.floor(Math.random() * 50) + 30;
+                        const functionStr = `G(x) = ${p}x - (${Kf} + ${k}x)`;
+                        const derivative = `${p} - ${k}`;
+                        const steps = [
+                            `Gegeben: Gewinnfunktion $$G(x) = ${p}x - (${Kf} + ${k}x)$$`,
+                            `Vereinfacht: $$G(x) = (${p} - ${k})x - ${Kf}$$`,
+                            `Ableitung der Konstanten -${Kf}: 0`,
+                            `Ableitung von (${p} - ${k})x: ${p} - ${k}`,
+                            `Ergebnis: $$G'(x) = ${p} - ${k}$$ (Grenzgewinn)`
+                        ];
+                        const tip = `Vereinfache zuerst die Funktion. Der Gewinn ist Umsatz minus Kosten.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Gewinnfunktion linear' };
+                    }
+                },
+                {
+                    name: 'Erlösfunktion',
+                    generator: () => {
+                        const p0 = Math.floor(Math.random() * 20) + 60;
+                        const m = Math.floor(Math.random() * 3) + 1;
+                        const functionStr = `E(x) = (${p0} - ${m}x)x`;
+                        const derivative = `${p0} - ${2*m}x`;
+                        const steps = [
+                            `Gegeben: Erlösfunktion $$E(x) = (${p0} - ${m}x)x$$`,
+                            `Erweitert: $$E(x) = ${p0}x - ${m}x^2$$`,
+                            `Ableitung von ${p0}x: ${p0}`,
+                            `Ableitung von -${m}x^2: -${2*m}x`,
+                            `Ergebnis: $$E'(x) = ${p0} - ${2*m}x$$ (Grenzerlös)`
+                        ];
+                        const tip = `Erweitere das Produkt zuerst. Der Erlös ist Preis mal Menge.`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Erlösfunktion' };
+                    }
+                }
+            ];
+
             switch (difficulty) {
                 case 'easy':
                     return easyTasks;
@@ -791,6 +940,8 @@
                     return mediumTasks;
                 case 'hard':
                     return hardTasks;
+                case 'bwl':
+                    return bwlTasks;
                 default:
                     return easyTasks;
             }
@@ -1042,6 +1193,227 @@
                     // Swipe nach rechts - Tipp anzeigen
                     showTip();
                 }
+            }
+        }
+
+        // PDF Export Funktionen
+        function exportToPDF() {
+            if (pdfTaskHistory.length === 0) {
+                showError('Keine Aufgaben zum Exportieren verfügbar. Generiere zuerst einige Aufgaben.');
+                return;
+            }
+
+            // Erstelle LaTeX-Inhalt
+            const latexContent = generateLaTeXContent();
+            
+            // Erstelle ein neues Fenster mit dem LaTeX-Inhalt
+            const latexWindow = window.open('', '_blank', 'width=800,height=600');
+            latexWindow.document.write('<html><head><title>Ableitungs-Trainer - LaTeX Export</title>');
+            latexWindow.document.write('<style>body { font-family: monospace; white-space: pre-wrap; padding: 20px; } textarea { width: 100%; height: 400px; font-family: monospace; } button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; } button:hover { background: #5568d3; }</style>');
+            latexWindow.document.write('</head><body>');
+            latexWindow.document.write('<h2>Ableitungs-Trainer - Aufgaben und Loesungen</h2>');
+            latexWindow.document.write('<p>Kopiere den folgenden LaTeX-Code und kompiliere ihn mit einem LaTeX-Editor wie <a href="https://www.overleaf.com" target="_blank">Overleaf</a>, TeXShop oder TeXworks:</p>');
+            latexWindow.document.write('<hr><textarea style="font-family:monospace;" readonly>');
+            latexWindow.document.write(latexContent);
+            latexWindow.document.write('</textarea>');
+            latexWindow.document.write('<br><button onclick="navigator.clipboard.writeText(document.querySelector(\'textarea\').value).then(() => alert(\'LaTeX-Code in Zwischenablage kopiert!\'))">Kopieren</button>');
+            latexWindow.document.write('</body></html>');
+            latexWindow.document.close();
+        }
+
+        function generateLaTeXContent() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('de-DE');
+            const timeStr = now.toLocaleTimeString('de-DE');
+            
+            let latex = `\\documentclass[12pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[ngerman]{babel}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{graphicx}
+\\usepackage{geometry}
+\\geometry{a4paper, left=25mm, right=25mm, top=25mm, bottom=25mm}
+\\usepackage{parskip}
+\\usepackage{enumitem}
+\\usepackage{fancyhdr}
+
+\\pagestyle{fancy}
+\\fancyhf{}
+\\rhead{Ableitungs-Trainer}
+\\lhead{Generiert am: ${dateStr} ${timeStr}}
+\\rfoot{Seite \\thepage}
+
+\\title{Ableitungs-Trainer - Aufgaben und Loesungen}
+\\author{}
+\\date{}
+
+\\begin{document}
+
+\\maketitle
+
+\\section*{Aufgaben und Loesungen}
+
+`;
+            
+            // Fuege jede Aufgabe hinzu
+            pdfTaskHistory.forEach((task, index) => {
+                const difficultyName = getDifficultyName(task.difficulty);
+                latex += `\\subsection*{Aufgabe ${index + 1} - ${difficultyName}}
+
+`;
+                latex += `\\textbf{Aufgabe:} Bilde die Ableitung der folgenden Funktion:
+\\begin{equation*}
+${formatLaTeXFunction(task.function)}
+\\end{equation*}
+
+`;
+                latex += `\\textbf{Tipp:} ${task.tip.replace(/\$/g, '').replace(/\\/g, '\\\\')}
+
+`;
+                latex += `\\textbf{Loesung:}
+\\begin{align*}
+`;
+                task.steps.forEach((step, stepIndex) => {
+                    const cleanStep = step.replace(/\$/g, '').replace(/\\/g, '\\\\');
+                    latex += `${stepIndex + 1}. & ${cleanStep} \\\\
+`;
+                });
+                latex += `\\end{align*}
+
+`;
+                latex += `\\textbf{Ergebnis:}
+\\begin{equation*}
+${formatLaTeXFunction(task.derivative)}
+\\end{equation*}
+
+`;
+                latex += `\\hline
+
+`;
+            });
+            
+            latex += `
+\\end{document}
+`;
+            
+            return latex;
+        }
+
+        function getDifficultyName(difficulty) {
+            switch(difficulty) {
+                case 'easy': return 'Einfach';
+                case 'medium': return 'Mittel';
+                case 'hard': return 'Schwer';
+                case 'bwl': return 'BWL Bachelor';
+                default: return difficulty;
+            }
+        }
+
+        function formatLaTeXFunction(func) {
+            // Ersetze HTML-Entitaeten
+            return func.replace(/&amp;/g, '&')
+                       .replace(/&lt;/g, '<')
+                       .replace(/&gt;/g, '>')
+                       .replace(/\$/g, '')
+                       .replace(/\\/g, '\\\\');
+        }
+
+        async function generatePDFWithJsPDF() {
+            try {
+                // Warte auf jsPDF
+                if (typeof jspdf === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('de-DE');
+                const timeStr = now.toLocaleTimeString('de-DE');
+                
+                // Titel
+                doc.setFontSize(20);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Ableitungs-Trainer - Aufgaben und Lösungen', 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Generiert am: ${dateStr} ${timeStr}`, 105, 30, { align: 'center' });
+                
+                let y = 40;
+                
+                pdfTaskHistory.forEach((task, index) => {
+                    const difficultyName = getDifficultyName(task.difficulty);
+                    
+                    // Überschrift
+                    y += 5;
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Aufgabe ${index + 1} - ${difficultyName}`, 15, y);
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    // Funktion
+                    y += 10;
+                    doc.text('Aufgabe: Bilde die Ableitung der folgenden Funktion:', 15, y);
+                    y += 7;
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`f(x) = ${task.function.replace(/\$/g, '').replace(/\\/g, '\\')}`, 15, y);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    // Tipp
+                    y += 10;
+                    doc.text('Tipp:', 15, y);
+                    y += 7;
+                    const tipText = task.tip.replace(/\$/g, '').replace(/\\/g, '\\');
+                    const tipLines = doc.splitTextToSize(tipText, 180);
+                    tipLines.forEach(line => {
+                        doc.text(line, 15, y);
+                        y += 7;
+                    });
+                    
+                    // Lösung
+                    y += 10;
+                    doc.text('Lösung:', 15, y);
+                    y += 7;
+                    task.steps.forEach((step, stepIndex) => {
+                        const cleanStep = step.replace(/\$/g, '').replace(/\\/g, '\\');
+                        const stepLines = doc.splitTextToSize(`${stepIndex + 1}. ${cleanStep}`, 180);
+                        stepLines.forEach(line => {
+                            doc.text(line, 15, y);
+                            y += 7;
+                        });
+                    });
+                    
+                    // Ergebnis
+                    y += 10;
+                    doc.text('Ergebnis:', 15, y);
+                    y += 7;
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`f'(x) = ${task.derivative.replace(/\$/g, '').replace(/\\/g, '\\')}`, 15, y);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    // Linie
+                    y += 10;
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.5);
+                    doc.line(15, y, 195, y);
+                    y += 5;
+                    
+                    // Neue Seite wenn nötig
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                });
+                
+                // Speichern
+                doc.save(`ableitungs-trainer-${dateStr.replace(/\./g, '-')}.pdf`);
+                
+            } catch (e) {
+                console.error('Fehler beim PDF-Export:', e);
+                alert('Fehler beim PDF-Export. Bitte versuche es mit dem LaTeX-Export.');
             }
         }
     </script>
