@@ -384,8 +384,10 @@
                 <div class="buttons-container">
                     <button class="action-btn btn-secondary" onclick="showTip()">Tipp anzeigen</button>
                     <button class="action-btn btn-secondary" onclick="showSolution()">Lösung anzeigen</button>
+                    <button class="action-btn btn-secondary" onclick="goBack()">Zurück</button>
                     <button class="action-btn btn-primary" onclick="generateNewTask()">Neue Aufgabe</button>
-                    <button class="action-btn btn-export" onclick="exportToPDF()">Als PDF exportieren</button>
+                    <button class="action-btn btn-export" onclick="exportToPDF()">Aufgaben als PDF exportieren</button>
+                    <button class="action-btn btn-export" onclick="downloadRulesPDF()">Regelübersicht PDF</button>
                 </div>
             </div>
 
@@ -421,6 +423,152 @@
         
         // Für PDF-Export
         let pdfTaskHistory = [];
+        
+        // Für Aufgaben-History (keine Wiederholungen)
+        let sessionTaskHistory = [];
+        let currentTaskIndex = -1;
+        
+        // Regelübersicht LaTeX
+        const rulesLatex = `\\documentclass[12pt, a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[ngerman]{babel}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{geometry}
+\\geometry{a4paper, left=25mm, right=25mm, top=25mm, bottom=25mm}
+
+\\title{Übersicht der Ableitungsregeln}
+\\author{}
+\\date{}
+
+\\begin{document}
+
+\\maketitle
+
+\\section*{Ableitungsregeln}
+
+\\subsection*{1. Potenzregel}
+Die Ableitung von \\$ f(x) = x^n \\$ ist:
+\\[
+ f'(x) = n \\cdot x^{n-1}
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = x^5 \\quad \\Rightarrow \\quad f'(x) = 5x^4
+\\]
+
+\\subsection*{2. Faktorregel}
+Ein konstanter Faktor \\$ c \\$ bleibt erhalten:
+\\[
+ f(x) = c \\cdot g(x) \\quad \\Rightarrow \\quad f'(x) = c \\cdot g'(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = 3x^4 \\quad \\Rightarrow \\quad f'(x) = 3 \\cdot 4x^3 = 12x^3
+\\]
+
+\\subsection*{3. Summenregel}
+Die Ableitung einer Summe ist die Summe der Ableitungen:
+\\[
+ f(x) = g(x) + h(x) \\quad \\Rightarrow \\quad f'(x) = g'(x) + h'(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = x^3 + 2x^2 \\quad \\Rightarrow \\quad f'(x) = 3x^2 + 4x
+\\]
+
+\\subsection*{4. Produktregel}
+Die Ableitung eines Produkts:
+\\[
+ f(x) = g(x) \\cdot h(x) \\quad \\Rightarrow \\quad f'(x) = g'(x) \\cdot h(x) + g(x) \\cdot h'(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = x^2 \\cdot \\sin(x) \\quad \\Rightarrow \\quad f'(x) = 2x \\cdot \\sin(x) + x^2 \\cdot \\cos(x)
+\\]
+
+\\subsection*{5. Quotientenregel}
+Die Ableitung eines Quotienten:
+\\[
+ f(x) = \\frac{g(x)}{h(x)} \\quad \\Rightarrow \\quad f'(x) = \\frac{g'(x) \\cdot h(x) - g(x) \\cdot h'(x)}{[h(x)]^2}
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\frac{x^2}{\\sin(x)} \\quad \\Rightarrow \\quad f'(x) = \\frac{2x \\cdot \\sin(x) - x^2 \\cdot \\cos(x)}{\\sin^2(x)}
+\\]
+
+\\subsection*{6. Kettenregel}
+Die Ableitung einer verketteten Funktion:
+\\[
+ f(x) = g(h(x)) \\quad \\Rightarrow \\quad f'(x) = g'(h(x)) \\cdot h'(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\sin(3x^2) \\quad \\Rightarrow \\quad f'(x) = \\cos(3x^2) \\cdot 6x = 6x \\cos(3x^2)
+\\]
+
+\\subsection*{7. Exponentialfunktion}
+Die Ableitung der Exponentialfunktion zur Basis \\$ e \\$:
+\\[
+ f(x) = e^x \\quad \\Rightarrow \\quad f'(x) = e^x
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = e^{2x} \\quad \\Rightarrow \\quad f'(x) = 2e^{2x}
+\\]
+
+\\subsection*{8. Natürlicher Logarithmus}
+Die Ableitung des natürlichen Logarithmus:
+\\[
+ f(x) = \\ln(x) \\quad \\Rightarrow \\quad f'(x) = \\frac{1}{x}
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\ln(5x) \\quad \\Rightarrow \\quad f'(x) = \\frac{5}{5x} = \\frac{1}{x}
+\\]
+
+\\subsection*{9. Sinus und Kosinus}
+\\[
+ f(x) = \\sin(x) \\quad \\Rightarrow \\quad f'(x) = \\cos(x)
+\\]
+\\[
+ f(x) = \\cos(x) \\quad \\Rightarrow \\quad f'(x) = -\\sin(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\sin(4x) \\quad \\Rightarrow \\quad f'(x) = 4\\cos(4x)
+\\]
+
+\\subsection*{10. Tangens}
+\\[
+ f(x) = \\tan(x) \\quad \\Rightarrow \\quad f'(x) = \\frac{1}{\\cos^2(x)} = 1 + \\tan^2(x)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\tan(2x) \\quad \\Rightarrow \\quad f'(x) = 2 \\cdot \\frac{1}{\\cos^2(2x)} = 2(1 + \\tan^2(2x))
+\\]
+
+\\subsection*{11. Wurzel}
+Die Ableitung der Wurzelfunktion:
+\\[
+ f(x) = \\sqrt{x} \\quad \\Rightarrow \\quad f'(x) = \\frac{1}{2\\sqrt{x}}
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = \\sqrt{3x} \\quad \\Rightarrow \\quad f'(x) = \\frac{3}{2\\sqrt{3x}}
+\\]
+
+\\subsection*{12. Allgemeine Exponentialfunktion}
+Die Ableitung der Exponentialfunktion zur Basis \\$ a \\$:
+\\[
+ f(x) = a^x \\quad \\Rightarrow \\quad f'(x) = a^x \\cdot \\ln(a)
+\\]
+\\textbf{Beispiel:}
+\\[
+ f(x) = 2^x \\quad \\Rightarrow \\quad f'(x) = 2^x \\cdot \\ln(2)
+\\]
+
+\\end{document}`;
 
         // Initialisierung
         window.onload = function() {
@@ -477,9 +625,17 @@
                 timestamp: new Date().toISOString()
             });
             
+            // Speichere in Session-History für "Zurück" Funktion
+            sessionTaskHistory.push(task);
+            currentTaskIndex = sessionTaskHistory.length - 1;
+            
             // Behalte nur die letzten 10 Aufgaben
             if (pdfTaskHistory.length > 10) {
                 pdfTaskHistory.shift();
+            }
+            if (sessionTaskHistory.length > 10) {
+                sessionTaskHistory.shift();
+                currentTaskIndex--;
             }
             
             // Zeige die Funktion an (mit MathJax)
@@ -500,13 +656,84 @@
                 MathJax.typesetPromise().catch((err) => console.log(err));
             }
         }
+        
+        // Zurück zur vorherigen Aufgabe
+        function goBack() {
+            if (currentTaskIndex > 0) {
+                currentTaskIndex--;
+                currentTask = sessionTaskHistory[currentTaskIndex];
+                
+                // Zeige die vorherige Funktion an
+                document.getElementById('functionDisplay').innerHTML = `$$${currentTask.function}$$`;
+                document.getElementById('functionDisplay').classList.add('fade-in');
+                
+                // Setze das Eingabefeld zurück
+                document.getElementById('userAnswer').value = '';
+                
+                // Verstecke Tipp, Lösung und Ergebnis
+                hideTip();
+                hideSolution();
+                hideResult();
+                hideError();
+                
+                // MathJax neu rendern
+                if (window.MathJax) {
+                    MathJax.typesetPromise().catch((err) => console.log(err));
+                }
+            } else {
+                showError('Keine vorherige Aufgabe verfügbar.');
+            }
+        }
+        
+        // Regelübersicht als PDF herunterladen
+        function downloadRulesPDF() {
+            try {
+                // Erstelle ein neues Fenster mit dem LaTeX-Inhalt
+                const latexWindow = window.open('', '_blank', 'width=800,height=600');
+                latexWindow.document.write('<html><head><title>Regelübersicht - LaTeX Export</title>');
+                latexWindow.document.write('<style>body { font-family: monospace; white-space: pre-wrap; padding: 20px; } textarea { width: 100%; height: 500px; font-family: monospace; font-size: 12px; } button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; margin-right: 10px; } button:hover { background: #5568d3; }</style>');
+                latexWindow.document.write('</head><body>');
+                latexWindow.document.write('<h2>Regelübersicht - Ableitungsregeln</h2>');
+                latexWindow.document.write('<p>Kopiere den folgenden LaTeX-Code und kompiliere ihn mit einem LaTeX-Editor wie <a href="https://www.overleaf.com" target="_blank">Overleaf</a>, TeXShop oder TeXworks:</p>');
+                latexWindow.document.write('<hr><textarea style="font-family:monospace;" readonly>');
+                latexWindow.document.write(rulesLatex);
+                latexWindow.document.write('</textarea>');
+                latexWindow.document.write('<br><button onclick="navigator.clipboard.writeText(document.querySelector(\'textarea\').value).then(() => alert(\'LaTeX-Code in Zwischenablage kopiert!\'))">Kopieren</button>');
+                latexWindow.document.write('<button onclick="window.print()">Drucken</button>');
+                latexWindow.document.write('</body></html>');
+                latexWindow.document.close();
+            } catch (e) {
+                console.error('Fehler beim Öffnen des Fensters:', e);
+                alert('Bitte erlaube Pop-ups für diese Seite, um die Regelübersicht anzuzeigen.');
+            }
+        }
 
         // DYNAMISCHE AUFGABENGENERIERUNG
         function generateRandomTask(difficulty) {
             const taskTypes = getTaskTypesForDifficulty(difficulty);
-            const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+            let task;
+            let attempts = 0;
+            const maxAttempts = 20; // Maximal 20 Versuche, um eine neue Aufgabe zu finden
             
-            return randomType.generator();
+            do {
+                const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+                task = randomType.generator();
+                attempts++;
+                
+                // Prüfe, ob diese Aufgabe bereits in der Session-History ist
+                const isDuplicate = sessionTaskHistory.some(prevTask => 
+                    prevTask.function === task.function && 
+                    prevTask.derivative === task.derivative
+                );
+                
+                if (!isDuplicate) {
+                    break; // Neue Aufgabe gefunden
+                }
+                
+            } while (attempts < maxAttempts);
+            
+            // Falls nach maxAttempts keine neue Aufgabe gefunden wurde, gib einfach eine zurück
+            return task;
         }
 
         function getTaskTypesForDifficulty(difficulty) {
@@ -817,121 +1044,114 @@
                 }
             ];
 
-            // BWL Bachelor Aufgaben
+            // BWL Bachelor Aufgaben - nur Regeln 1-6 (Potenz, Faktor, Summe, Produkt, Quotient, Kette)
             const bwlTasks = [
-                // Preis-Absatz-Funktionen
+                // Potenzregel (Regel 1)
                 {
-                    name: 'Preis-Absatz-Funktion linear',
+                    name: 'Potenzregel',
                     generator: () => {
-                        const p0 = Math.floor(Math.random() * 50) + 100;
-                        const m = Math.floor(Math.random() * 5) + 1;
-                        const functionStr = `p(x) = ${p0} - ${m}x`;
-                        const derivative = `-${m}`;
+                        const n = Math.floor(Math.random() * 5) + 2;
+                        const functionStr = `f(x) = x^{${n}}`;
+                        const derivative = `${n}x^{${n-1}}`;
                         const steps = [
-                            `Gegeben: Preis-Absatz-Funktion $$p(x) = ${p0} - ${m}x$$`,
-                            `Lineare Funktion: Ableitung der Konstanten ${p0} ist 0`,
-                            `Ableitung von -${m}x ist -${m}`,
-                            `Ergebnis: $$p'(x) = -${m}$$ (Grenzumsatz/Preisänderungsrate)`
+                            `Gegeben: $$f(x) = x^{${n}}$$`,
+                            `Potenzregel (Regel 1): $$\frac{d}{dx}[x^n] = n\cdot x^{n-1}$$`,
+                            `Ergebnis: $$f'(x) = ${n}x^{${n-1}}$$`
                         ];
-                        const tip = `Bei einer linearen Preis-Absatz-Funktion p(x) = a - bx ist die Ableitung p'(x) = -b.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Preis-Absatz-Funktion linear' };
+                        const tip = `Verwende die Potenzregel (Regel 1).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Potenzregel' };
                     }
                 },
+                // Faktorregel (Regel 2)
                 {
-                    name: 'Preis-Absatz-Funktion quadratisch',
+                    name: 'Faktorregel',
                     generator: () => {
-                        const p0 = Math.floor(Math.random() * 30) + 50;
-                        const a = Math.floor(Math.random() * 3) + 1;
-                        const b = Math.floor(Math.random() * 2) + 1;
-                        const functionStr = `p(x) = ${p0} - ${a}x + ${b}x^2`;
-                        const derivative = `-${a} + ${2*b}x`;
+                        const c = Math.floor(Math.random() * 5) + 2;
+                        const n = Math.floor(Math.random() * 4) + 2;
+                        const functionStr = `f(x) = ${c}x^{${n}}`;
+                        const derivative = `${c * n}x^{${n-1}}`;
                         const steps = [
-                            `Gegeben: Preis-Absatz-Funktion $$p(x) = ${p0} - ${a}x + ${b}x^2$$`,
-                            `Konstante ${p0}: Ableitung = 0`,
-                            `Term -${a}x: Ableitung = -${a}`,
-                            `Term ${b}x^2: Ableitung = ${2*b}x (Potenzregel)`,
-                            `Ergebnis: $$p'(x) = -${a} + ${2*b}x$$`
+                            `Gegeben: $$f(x) = ${c}x^{${n}}$$`,
+                            `Faktorregel (Regel 2): $$\frac{d}{dx}[c\cdot g(x)] = c\cdot g'(x)$$`,
+                            `Ergebnis: $$f'(x) = ${c * n}x^{${n-1}}$$`
                         ];
-                        const tip = `Leite jeden Term einzeln ab.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Preis-Absatz-Funktion quadratisch' };
+                        const tip = `Verwende die Faktorregel (Regel 2).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Faktorregel' };
                     }
                 },
-                // Kostenfunktionen
+                // Summenregel (Regel 3)
                 {
-                    name: 'Kostenfunktion linear',
+                    name: 'Summenregel',
                     generator: () => {
-                        const Kf = Math.floor(Math.random() * 100) + 50;
-                        const kv = Math.floor(Math.random() * 20) + 5;
-                        const functionStr = `K(x) = ${Kf} + ${kv}x`;
-                        const derivative = `${kv}`;
+                        const n = Math.floor(Math.random() * 3) + 2;
+                        const m = Math.floor(Math.random() * 3) + 2;
+                        const functionStr = `f(x) = x^{${n}} + x^{${m}}`;
+                        const derivative = `${n}x^{${n-1}} + ${m}x^{${m-1}}`;
                         const steps = [
-                            `Gegeben: Kostenfunktion $$K(x) = ${Kf} + ${kv}x$$`,
-                            `Fixkosten ${Kf}: Ableitung = 0`,
-                            `Variable Kosten ${kv}x: Ableitung = ${kv}`,
-                            `Ergebnis: $$K'(x) = ${kv}$$ (Grenzkosten)`
+                            `Gegeben: $$f(x) = x^{${n}} + x^{${m}}$$`,
+                            `Summenregel (Regel 3): $$\frac{d}{dx}[g(x) + h(x)] = g'(x) + h'(x)$$`,
+                            `Ergebnis: $$f'(x) = ${n}x^{${n-1}} + ${m}x^{${m-1}}$$`
                         ];
-                        const tip = `Bei einer linearen Kostenfunktion sind die Grenzkosten K'(x) gleich den variablen Kosten pro Einheit.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Kostenfunktion linear' };
+                        const tip = `Verwende die Summenregel (Regel 3).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Summenregel' };
                     }
                 },
+                // Produktregel (Regel 4)
                 {
-                    name: 'Kostenfunktion quadratisch',
+                    name: 'Produktregel',
                     generator: () => {
-                        const Kf = Math.floor(Math.random() * 80) + 30;
-                        const a = Math.floor(Math.random() * 10) + 5;
-                        const b = Math.floor(Math.random() * 5) + 1;
-                        const functionStr = `K(x) = ${Kf} + ${a}x + ${b}x^2`;
-                        const derivative = `${a} + ${2*b}x`;
-                        const steps = [
-                            `Gegeben: Kostenfunktion $$K(x) = ${Kf} + ${a}x + ${b}x^2$$`,
-                            `Fixkosten ${Kf}: Ableitung = 0`,
-                            `Linearer Term ${a}x: Ableitung = ${a}`,
-                            `Quadratischer Term ${b}x^2: Ableitung = ${2*b}x`,
-                            `Ergebnis: $$K'(x) = ${a} + ${2*b}x$$ (Grenzkosten)`
-                        ];
-                        const tip = `Leite jeden Term ab. Die Fixkosten fallen weg.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Kostenfunktion quadratisch' };
-                    }
-                },
-                // Gewinnfunktionen
-                {
-                    name: 'Gewinnfunktion einfach',
-                    generator: () => {
-                        const p = Math.floor(Math.random() * 20) + 50;
-                        const k = Math.floor(Math.random() * 10) + 20;
-                        const Kf = Math.floor(Math.random() * 50) + 30;
-                        const functionStr = `G(x) = ${p}x - (${Kf} + ${k}x)`;
-                        const derivative = `${p} - ${k}`;
-                        const steps = [
-                            `Gegeben: Gewinnfunktion $$G(x) = ${p}x - (${Kf} + ${k}x)$$`,
-                            `Vereinfacht: $$G(x) = (${p} - ${k})x - ${Kf}$$`,
-                            `Ableitung der Konstanten -${Kf}: 0`,
-                            `Ableitung von (${p} - ${k})x: ${p} - ${k}`,
-                            `Ergebnis: $$G'(x) = ${p} - ${k}$$ (Grenzgewinn)`
-                        ];
-                        const tip = `Vereinfache zuerst die Funktion. Der Gewinn ist Umsatz minus Kosten.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Gewinnfunktion linear' };
-                    }
-                },
-                {
-                    name: 'Erlösfunktion',
-                    generator: () => {
-                        const p0 = Math.floor(Math.random() * 20) + 60;
+                        const n = Math.floor(Math.random() * 3) + 2;
                         const m = Math.floor(Math.random() * 3) + 1;
-                        const functionStr = `E(x) = (${p0} - ${m}x)x`;
-                        const derivative = `${p0} - ${2*m}x`;
+                        const functionStr = `f(x) = x^{${n}}\cdot x^{${m}}`;
+                        const derivative = `${n + m}x^{${n + m - 1}}`;
                         const steps = [
-                            `Gegeben: Erlösfunktion $$E(x) = (${p0} - ${m}x)x$$`,
-                            `Erweitert: $$E(x) = ${p0}x - ${m}x^2$$`,
-                            `Ableitung von ${p0}x: ${p0}`,
-                            `Ableitung von -${m}x^2: -${2*m}x`,
-                            `Ergebnis: $$E'(x) = ${p0} - ${2*m}x$$ (Grenzerlös)`
+                            `Gegeben: $$f(x) = x^{${n}}\cdot x^{${m}}$$`,
+                            `Produktregel (Regel 4): $$(u\cdot v)' = u'v + uv'$$`,
+                            `Ergebnis: $$f'(x) = ${n + m}x^{${n + m - 1}}$$`
                         ];
-                        const tip = `Erweitere das Produkt zuerst. Der Erlös ist Preis mal Menge.`;
-                        return { function: functionStr, derivative, steps, tip, rule: 'Erlösfunktion' };
+                        const tip = `Verwende die Produktregel (Regel 4).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Produktregel' };
+                    }
+                },
+                // Quotientenregel (Regel 5)
+                {
+                    name: 'Quotientenregel',
+                    generator: () => {
+                        const c = Math.floor(Math.random() * 5) + 1;
+                        const functionStr = `f(x) = \frac{x^2}{x + ${c}}`;
+                        const numerator = `2x(x + ${c}) - x^2`;
+                        const denominator = `(x + ${c})^2`;
+                        const derivative = `\frac{${numerator}}{${denominator}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = \frac{x^2}{x + ${c}}$$`,
+                            `Quotientenregel (Regel 5): $$\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$$`,
+                            `Ergebnis: $$f'(x) = \frac{${numerator}}{${denominator}}$$`
+                        ];
+                        const tip = `Verwende die Quotientenregel (Regel 5).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Quotientenregel' };
+                    }
+                },
+                // Kettenregel (Regel 6)
+                {
+                    name: 'Kettenregel',
+                    generator: () => {
+                        const k = Math.floor(Math.random() * 4) + 2;
+                        const n = Math.floor(Math.random() * 3) + 2;
+                        const functionStr = `f(x) = (${k}x)^{${n}}`;
+                        const derivative = `${n} \\cdot ${k} \\cdot (${k}x)^{${n-1}}`;
+                        const steps = [
+                            `Gegeben: $$f(x) = (${k}x)^{${n}}$$`,
+                            `Kettenregel (Regel 6): $$\frac{d}{dx}[g(h(x))] = g'(h(x)) \\cdot h'(x)$$`,
+                            `Ergebnis: $$f'(x) = ${n} \\cdot ${k} \\cdot (${k}x)^{${n-1}}$$`
+                        ];
+                        const tip = `Verwende die Kettenregel (Regel 6).`;
+                        return { function: functionStr, derivative, steps, tip, rule: 'Kettenregel' };
                     }
                 }
             ];
+
+            // Alle Aufgaben für "schwer" - Mischung ALLER Regeln
+            const allTasks = [...easyTasks, ...mediumTasks, ...hardTasks];
 
             switch (difficulty) {
                 case 'easy':
@@ -939,9 +1159,9 @@
                 case 'medium':
                     return mediumTasks;
                 case 'hard':
-                    return hardTasks;
+                    return allTasks; // Mischung ALLER Regeln
                 case 'bwl':
-                    return bwlTasks;
+                    return bwlTasks; // Nur Regeln 1-6
                 default:
                     return easyTasks;
             }
@@ -1288,7 +1508,7 @@ ${formatLaTeXFunction(task.derivative)}
 \\end{equation*}
 
 `;
-                latex += `\\hline
+                latex += `\vspace{1cm}
 
 `;
             });
