@@ -93,25 +93,73 @@
             background: #9C27B0;
         }
 
-        /* Formelübersicht */
-        .formula-overview {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border-left: 6px solid #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
         }
 
-        .formula-overview h3 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.4em;
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 2px solid #e9ecef;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px 15px 0 0;
+            color: white;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5em;
             font-weight: 600;
-            text-align: center;
         }
 
-        .formula-overview h4 {
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-body h4 {
             color: #764ba2;
             margin: 25px 0 15px 0;
             font-size: 1.2em;
@@ -120,13 +168,43 @@
             padding-bottom: 8px;
         }
 
+        .formula-list {
+            display: block;
+        }
+
+        .formula-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
         .formula-title {
             color: #667eea;
             font-size: 1.1em;
             font-weight: 600;
             margin-bottom: 8px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 6px;
+        }
+
+        .formula-main {
+            font-size: 1.2em;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .formula-description {
+            color: #495057;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-top: 8px;
         }
 
         .formula-grid {
@@ -465,145 +543,115 @@
             <!-- Formelübersicht Button - IMMER sichtbar -->
             <div class="formula-button-container" style="text-align: center; margin-bottom: 20px;">
                 <button class="action-btn btn-secondary" onclick="toggleFormulaOverview()" id="formulaOverviewBtn">
-                    📚 Formelübersicht anzeigen
+                    📚 Formelübersicht
                 </button>
             </div>
 
-            <!-- Komplette Formelübersicht -->
-            <div class="formula-overview" id="formulaOverview" style="display: none;">
-                <h3>📚 Formelübersicht</h3>
-                
-                <h4>🔹 Grundlegende Ableitungsregeln</h4>
-                <div class="formula-grid">
-                    <div class="formula-card">
-                        <div class="formula-title">Potenzregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[x^n] = n \cdot x^{n-1}$$</div>
-                        <div class="formula-description">
-                            <small>Für alle reellen Zahlen n</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Konstantenregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[c] = 0$$</div>
-                        <div class="formula-description">
-                            <small>Die Ableitung einer Konstanten ist null</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Faktorregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[c \cdot f(x)] = c \cdot f'(x)$$</div>
-                        <div class="formula-description">
-                            <small>Konstante Faktoren bleiben erhalten</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Summenregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[f(x) + g(x)] = f'(x) + g'(x)$$</div>
-                        <div class="formula-description">
-                            <small>Ableitung der Summe = Summe der Ableitungen</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Produktregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[f(x) \cdot g(x)] = f'(x) \cdot g(x) + f(x) \cdot g'(x)$$</div>
-                        <div class="formula-description">
-                            <small>"Erste mal Ableitung der zweiten plus zweite mal Ableitung der ersten"</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Quotientenregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}$$</div>
-                        <div class="formula-description">
-                            <small>"NAZ minus ZAN durch N²"</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Kettenregel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$$</div>
-                        <div class="formula-description">
-                            <small>"Äußere Ableitung mal innere Ableitung"</small>
-                        </div>
-                    </div>
+            <!-- Overlay für Formelübersicht -->
+            <div class="modal-overlay" id="formulaOverlay" style="display: none;" onclick="toggleFormulaOverview()">
+            </div>
+
+            <!-- Komplette Formelübersicht als Overlay -->
+            <div class="modal-content" id="formulaOverview" style="display: none;">
+                <div class="modal-header">
+                    <h3>📚 Formelübersicht</h3>
+                    <button class="close-btn" onclick="toggleFormulaOverview()">×</button>
                 </div>
-                
-                <h4>🔹 Wichtige Ableitungen</h4>
-                <div class="formula-grid">
-                    <div class="formula-card">
-                        <div class="formula-title">e-Funktion</div>
-                        <div class="formula-main">$$\frac{d}{dx}[e^x] = e^x$$</div>
-                        <div class="formula-description">
-                            <small>Die e-Funktion bleibt erhalten</small>
+                <div class="modal-body">
+                    <h4>🔹 Grundlegende Ableitungsregeln</h4>
+                    <div class="formula-list">
+                        <div class="formula-item">
+                            <div class="formula-title">Potenzregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[x^n] = n \cdot x^{n-1}$$</div>
+                            <div class="formula-description">Für alle reellen Zahlen n</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Konstantenregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[c] = 0$$</div>
+                            <div class="formula-description">Die Ableitung einer Konstanten ist null</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Faktorregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[c \cdot f(x)] = c \cdot f'(x)$$</div>
+                            <div class="formula-description">Konstante Faktoren bleiben erhalten</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Summenregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[f(x) + g(x)] = f'(x) + g'(x)$$</div>
+                            <div class="formula-description">Ableitung der Summe = Summe der Ableitungen</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Produktregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[f(x) \cdot g(x)] = f'(x) \cdot g(x) + f(x) \cdot g'(x)$$</div>
+                            <div class="formula-description">"Erste mal Ableitung der zweiten plus zweite mal Ableitung der ersten"</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Quotientenregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}$$</div>
+                            <div class="formula-description">"NAZ minus ZAN durch N²"</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Kettenregel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$$</div>
+                            <div class="formula-description">"Äußere Ableitung mal innere Ableitung"</div>
                         </div>
                     </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Natürlicher Logarithmus</div>
-                        <div class="formula-main">$$\frac{d}{dx}[\ln(x)] = \frac{1}{x}$$</div>
-                        <div class="formula-description">
-                            <small>Für x > 0</small>
+                    
+                    <h4>🔹 Wichtige Ableitungen</h4>
+                    <div class="formula-list">
+                        <div class="formula-item">
+                            <div class="formula-title">e-Funktion</div>
+                            <div class="formula-main">$$\frac{d}{dx}[e^x] = e^x$$</div>
+                            <div class="formula-description">Die e-Funktion bleibt erhalten</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Natürlicher Logarithmus</div>
+                            <div class="formula-main">$$\frac{d}{dx}[\ln(x)] = \frac{1}{x}$$</div>
+                            <div class="formula-description">Für x > 0</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Sin-Funktion</div>
+                            <div class="formula-main">$$\frac{d}{dx}[\sin(x)] = \cos(x)$$</div>
+                            <div class="formula-description">Sin wird zu Cos</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Cos-Funktion</div>
+                            <div class="formula-main">$$\frac{d}{dx}[\cos(x)] = -\sin(x)$$</div>
+                            <div class="formula-description">Cos wird zu -Sin</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Wurzel</div>
+                            <div class="formula-main">$$\frac{d}{dx}[\sqrt{x}] = \frac{1}{2\sqrt{x}}$$</div>
+                            <div class="formula-description">Oder: (1/2) · x^(-1/2)</div>
+                        </div>
+                        <div class="formula-item">
+                            <div class="formula-title">Reziproke</div>
+                            <div class="formula-main">$$\frac{d}{dx}\left[\frac{1}{x}\right] = -\frac{1}{x^2}$$</div>
+                            <div class="formula-description">Negatives Vorzeichen!</div>
                         </div>
                     </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Sin-Funktion</div>
-                        <div class="formula-main">$$\frac{d}{dx}[\sin(x)] = \cos(x)$$</div>
-                        <div class="formula-description">
-                            <small>Sin wird zu Cos</small>
+                    
+                    <h4>🔹 BWL Formeln</h4>
+                    <div class="formula-list">
+                        <div class="formula-item">
+                            <div class="formula-title">Bogenelastizität der Nachfrage</div>
+                            <div class="formula-main">$$\varepsilon_{y,x} = \frac{\Delta y / y}{\Delta x / x}$$<br>$$= \frac{\Delta y}{\Delta x} \cdot \frac{x}{y}$$</div>
+                            <div class="formula-description">Preiselastizität: ε = (Δx/x) / (Δp/p)<br>Misst die prozentuale Änderung der Nachfrage bei einer prozentualen Preisänderung</div>
                         </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Cos-Funktion</div>
-                        <div class="formula-main">$$\frac{d}{dx}[\cos(x)] = -\sin(x)$$</div>
-                        <div class="formula-description">
-                            <small>Cos wird zu -Sin</small>
+                        <div class="formula-item">
+                            <div class="formula-title">Grenzkosten</div>
+                            <div class="formula-main">$$K'(x) = \frac{dK}{dx}$$</div>
+                            <div class="formula-description">Änderung der Kosten bei einer zusätzlichen Einheit<br>Erste Ableitung der Kostenfunktion</div>
                         </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Wurzel</div>
-                        <div class="formula-main">$$\frac{d}{dx}[\sqrt{x}] = \frac{1}{2\sqrt{x}}$$</div>
-                        <div class="formula-description">
-                            <small>Oder: (1/2) · x^(-1/2)</small>
+                        <div class="formula-item">
+                            <div class="formula-title">Grenzumsatz / Grenzerlös</div>
+                            <div class="formula-main">$$E'(x) = \frac{dE}{dx}$$</div>
+                            <div class="formula-description">Änderung des Erlöses bei einer zusätzlichen Einheit<br>Erste Ableitung der Erlösfunktion</div>
                         </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Reziproke</div>
-                        <div class="formula-main">$$\frac{d}{dx}\left[\frac{1}{x}\right] = -\frac{1}{x^2}$$</div>
-                        <div class="formula-description">
-                            <small>Negatives Vorzeichen!</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <h4>🔹 BWL Formeln</h4>
-                <div class="formula-grid">
-                    <div class="formula-card">
-                        <div class="formula-title">Bogenelastizität der Nachfrage</div>
-                        <div class="formula-main">$$\varepsilon_{y,x} = \frac{\Delta y / y}{\Delta x / x}$$<br>$$= \frac{\Delta y}{\Delta x} \cdot \frac{x}{y}$$</div>
-                        <div class="formula-description">
-                            Preiselastizität: ε = (Δx/x) / (Δp/p)
-                            <small>Misst die prozentuale Änderung der Nachfrage bei einer prozentualen Preisänderung</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Grenzkosten</div>
-                        <div class="formula-main">$$K'(x) = \frac{dK}{dx}$$</div>
-                        <div class="formula-description">
-                            Änderung der Kosten bei einer zusätzlichen Einheit
-                            <small>Erste Ableitung der Kostenfunktion</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Grenzumsatz / Grenzerlös</div>
-                        <div class="formula-main">$$E'(x) = \frac{dE}{dx}$$</div>
-                        <div class="formula-description">
-                            Änderung des Erlöses bei einer zusätzlichen Einheit
-                            <small>Erste Ableitung der Erlösfunktion</small>
-                        </div>
-                    </div>
-                    <div class="formula-card">
-                        <div class="formula-title">Grenzgewinn</div>
-                        <div class="formula-main">$$G'(x) = E'(x) - K'(x)$$</div>
-                        <div class="formula-description">
-                            Änderung des Gewinns bei einer zusätzlichen Einheit
-                            <small>Differenz aus Grenzerlös und Grenzkosten</small>
+                        <div class="formula-item">
+                            <div class="formula-title">Grenzgewinn</div>
+                            <div class="formula-main">$$G'(x) = E'(x) - K'(x)$$</div>
+                            <div class="formula-description">Änderung des Gewinns bei einer zusätzlichen Einheit<br>Differenz aus Grenzerlös und Grenzkosten</div>
                         </div>
                     </div>
                 </div>
@@ -719,23 +767,23 @@
             hideError();
         }
 
-        // Formelübersicht umschalten
+        // Formelübersicht umschalten (Overlay)
         function toggleFormulaOverview() {
-            const overview = document.getElementById('formulaOverview');
-            const button = document.getElementById('formulaOverviewBtn');
+            const overlay = document.getElementById('formulaOverlay');
+            const modal = document.getElementById('formulaOverview');
             
-            if (overview.style.display === 'none' || overview.style.display === '') {
-                overview.style.display = 'block';
-                overview.classList.add('fade-in');
-                button.textContent = '📚 Formelübersicht verstecken';
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                overlay.style.display = 'block';
+                modal.style.display = 'block';
+                modal.classList.add('fade-in');
                 // MathJax neu rendern
                 if (window.MathJax) {
                     MathJax.typesetPromise().catch((err) => console.log(err));
                 }
             } else {
-                overview.style.display = 'none';
-                overview.classList.remove('fade-in');
-                button.textContent = '📚 Formelübersicht anzeigen';
+                overlay.style.display = 'none';
+                modal.style.display = 'none';
+                modal.classList.remove('fade-in');
             }
         }
 
